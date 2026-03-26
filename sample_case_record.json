@@ -1,0 +1,54 @@
+{
+  "student_name": "Jane Smith",
+  "student_number": "B00123456",
+  "programme": "MSc Computer Science",
+  "year_of_study": "1",
+  "level": "PG",
+  "offence_count_label": "First",
+  "prior_offences": 0,
+  "module_code": "COM747",
+  "module_title": "Data Science and Machine Learning",
+  "qahe_module_leader": "Dr Sharjeel Aslam",
+  "uu_module_leader": "",
+  "assessment_item": "Coursework 2",
+  "assessment_type": "Assignment",
+  "assessment_setting": "Coursework / take-home setting",
+  "date_submitted": "2026-03-18",
+  "date_detected": "",
+  "date_student_meeting": "",
+  "student_meeting_mode": "Microsoft Teams",
+  "misconduct_type": "Inappropriate AI Use",
+  "offence_family": "PR",
+  "level_of_concern": "Moderate",
+  "exceptional_npr_minor": false,
+  "panel_type": "Local QAHE School-stage panel",
+  "panel_members": [
+    "Dr Sharjeel Aslam",
+    "Dr Example Reviewer"
+  ],
+  "evidence_items": [
+    "Similarity / AI indicator report",
+    "Marker note highlighting affected passages"
+  ],
+  "extent_affected": "About 20% to 50%",
+  "summary_of_concern": "Sections of the submitted report appeared stylistically inconsistent and closely aligned with AI-generated output.",
+  "narrative_and_rationale": "The student was informed of the concern and given the opportunity to respond. The case was treated as plagiarism-related academic misconduct under the Procedure.",
+  "recommended_actions": [
+    "A",
+    "B"
+  ],
+  "recommended_penalties": [
+    "D"
+  ],
+  "referral_only": false,
+  "register_code": "AI1",
+  "form_completed_by": "Dr Sharjeel Aslam",
+  "form_completed_role": "Module Leader",
+  "date_completed": "2026-03-24",
+  "date_recorded_on_register": "",
+  "recorded_by": "",
+  "student_contact_email_subject": "Invitation to discuss academic misconduct concern",
+  "student_contact_email_body": "Dear Jane Smith,\\n\\nA concern has been identified regarding your submission. You are invited to a Teams meeting to discuss the concern and review the evidence.\\n\\nKind regards,\\nDr Sharjeel Aslam",
+  "outcome_email_subject": "Outcome of academic misconduct case",
+  "outcome_email_body": "Dear Jane Smith,\\n\\nFollowing the review, the concern has been classified as a Moderate plagiarism-related first offence.\\n\\nKind regards,\\nDr Sharjeel Aslam"
+}
