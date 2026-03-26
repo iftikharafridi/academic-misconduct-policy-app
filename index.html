@@ -488,6 +488,7 @@ pre.doc{
 <input type="file" id="jsonLoader" accept=".json,application/json" style="display:none" onchange="importCaseJson(event)">
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
 // ════════════════════════════════════════════════════
 // POLICY ENGINE — Appendix 1, UU Misconduct Procedure 2025
@@ -1235,7 +1236,8 @@ function s0(){
       <div class="crow">
         <button class="btn btn-outline" onclick="saveCaseJson()">💾 Save Case JSON</button>
         <button class="btn btn-ghost" onclick="loadCaseJsonClick()">📂 Load Case JSON</button>
-        <button class="btn btn-primary" onclick="exportDocx()" title="Creates a DOCX in the browser using JavaScript.">⬇️ Download DOCX</button>
+        <button class="btn btn-primary" onclick="downloadCasePackage()" title="Downloads a ZIP with DOCX, JSON, summaries, and email drafts.">📦 Download Case Package</button>
+        <button class="btn btn-outline" onclick="exportDocx()" title="Creates a DOCX in the browser using JavaScript.">⬇️ Download DOCX</button>
       </div>
       <div class="hint" style="margin-top:10px">Workflow: review the case → save JSON if needed → download DOCX → save a PDF snapshot for filing.</div>
     </div>
@@ -1591,7 +1593,8 @@ ${facWarn}
       <div style="display:flex;flex-direction:column;gap:7px">
         <button class="btn btn-outline" onclick="saveCaseJson()" style="width:100%;justify-content:center">Save Case JSON</button>
         <button class="btn btn-ghost" onclick="loadCaseJsonClick()" style="width:100%;justify-content:center">Load Case JSON</button>
-        <button class="btn btn-primary" onclick="exportDocx()" style="width:100%;justify-content:center" title="Creates a DOCX in the browser using JavaScript.">Download DOCX</button>
+        <button class="btn btn-primary" onclick="downloadCasePackage()" style="width:100%;justify-content:center" title="Downloads a ZIP with DOCX, JSON, summaries, and email drafts.">Download Case Package</button>
+        <button class="btn btn-outline" onclick="exportDocx()" style="width:100%;justify-content:center" title="Creates a DOCX in the browser using JavaScript.">Download DOCX</button>
       </div>
     </div>
     <div style="display:flex;gap:7px">
@@ -1631,10 +1634,8 @@ ${S.tab==="summary"?`
 <div class="crow">
   <button class="btn btn-outline" onclick="doCopy('summary')">${S.copied==='summary'?'✓ Copied!':'Copy to Clipboard'}</button>
   <button class="btn btn-ghost" onclick="exportPdf()">Print / Save PDF</button>
-  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
-  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
-  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
-  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
+  <button class="btn btn-primary" onclick="downloadCasePackage()">Download Case Package</button>
+  <button class="btn btn-outline" onclick="exportDocx()">Download DOCX</button>
 </div>`:""}
 
 ${S.tab==="form"?`
@@ -1663,7 +1664,8 @@ ${S.tab==="panelshort"?`
 <div class="crow">
   <button class="btn btn-outline" onclick="copyTxt(genPanelSummaryShort(),'panelshort')">${S.copied==="panelshort"?"✓ Copied!":"Copy to Clipboard"}</button>
   <button class="btn btn-ghost" onclick="printPanelSummary('short')">Print / Save PDF</button>
-  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
+  <button class="btn btn-primary" onclick="downloadCasePackage()">Download Case Package</button>
+  <button class="btn btn-outline" onclick="exportDocx()">Download DOCX</button>
 </div>`:""}
 
 ${S.tab==="panelfull"?`
@@ -1671,7 +1673,8 @@ ${S.tab==="panelfull"?`
 <div class="crow">
   <button class="btn btn-outline" onclick="copyTxt(genPanelSummaryFull(),'panelfull')">${S.copied==="panelfull"?"✓ Copied!":"Copy to Clipboard"}</button>
   <button class="btn btn-ghost" onclick="printPanelSummary('full')">Print / Save PDF</button>
-  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
+  <button class="btn btn-primary" onclick="downloadCasePackage()">Download Case Package</button>
+  <button class="btn btn-outline" onclick="exportDocx()">Download DOCX</button>
 </div>`:""}
 
 ${S.tab==="panelpack"?`
@@ -1679,7 +1682,8 @@ ${S.tab==="panelpack"?`
 <div class="crow">
   <button class="btn btn-outline" onclick="copyTxt(genPanelPack(),'panelpack')">${S.copied==="panelpack"?"✓ Copied!":"Copy to Clipboard"}</button>
   <button class="btn btn-ghost" onclick="printPanelPack()">Print / Save PDF</button>
-  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
+  <button class="btn btn-primary" onclick="downloadCasePackage()">Download Case Package</button>
+  <button class="btn btn-outline" onclick="exportDocx()">Download DOCX</button>
 </div>`:""}`;
 }
 
@@ -1922,10 +1926,9 @@ function docxKVTable(rows){
     }))
   });
 }
-async function exportDocx(){
-  if(!window.docx || !window.saveAs){
-    alert("DOCX library not loaded. If you are using GitHub Pages, check that the JavaScript library files are reachable.");
-    return;
+async function buildDocxBlob(){
+  if(!window.docx){
+    throw new Error("DOCX library not loaded.");
   }
   const d = window.docx;
   const rec = buildCaseRecord();
@@ -2020,9 +2023,86 @@ async function exportDocx(){
     sections: [{ properties: {}, children: sectionChildren }]
   });
   const blob = await d.Packer.toBlob(doc);
-  const student = safeFilePart(rec.student_number || rec.student_name, "case");
-  const modulePart = safeFilePart(rec.module_code || rec.module_title, "module");
-  saveAs(blob, `misconduct-case-${student}-${modulePart}.docx`);
+  return { blob, rec };
+}
+async function exportDocx(){
+  if(!window.docx || !window.saveAs){
+    alert("DOCX library not loaded. If you are using GitHub Pages, check that the JavaScript library files are reachable.");
+    return;
+  }
+  try{
+    const { blob, rec } = await buildDocxBlob();
+    const student = safeFilePart(rec.student_number || rec.student_name, "case");
+    const modulePart = safeFilePart(rec.module_code || rec.module_title, "module");
+    saveAs(blob, `misconduct-case-${student}-${modulePart}.docx`);
+  }catch(err){
+    alert("Could not generate the DOCX file.");
+    console.error(err);
+  }
+}
+function textBlob(txt){
+  return new Blob([String(txt || "")], { type: "text/plain;charset=utf-8" });
+}
+async function blobToUint8Array(blob){
+  return new Uint8Array(await blob.arrayBuffer());
+}
+async function downloadCasePackage(){
+  if(!window.JSZip || !window.saveAs){
+    alert("ZIP library not loaded. Please check that the JSZip script is reachable.");
+    return;
+  }
+  try{
+    const zip = new JSZip();
+    const rec = buildCaseRecord();
+    const student = safeFilePart(rec.student_number || rec.student_name, "case");
+    const modulePart = safeFilePart(rec.module_code || rec.module_title, "module");
+    const base = `misconduct-case-${student}-${modulePart}`;
+
+    const jsonText = JSON.stringify(rec, null, 2);
+    zip.file(`${base}.json`, jsonText);
+    zip.file(`register-form-${student}-${modulePart}.txt`, genForm());
+    zip.file(`case-summary-${student}-${modulePart}.txt`, genCaseSummary());
+    zip.file(`initial-contact-email-${student}-${modulePart}.txt`, genInitialContactEmail());
+    zip.file(`outcome-email-${student}-${modulePart}.txt`, genEmail());
+    zip.file(`panel-summary-short-${student}-${modulePart}.txt`, genPanelSummaryShort());
+    zip.file(`panel-summary-full-${student}-${modulePart}.txt`, genPanelSummaryFull());
+    zip.file(`panel-pack-${student}-${modulePart}.txt`, genPanelPack());
+    zip.file(`README-${student}-${modulePart}.txt`, [
+      "Academic Misconduct Case Package",
+      "",
+      `Student: ${safeDocxText(rec.student_name, "Not recorded")}`,
+      `Student number: ${safeDocxText(rec.student_number, "Not recorded")}`,
+      `Module: ${safeDocxText(rec.module_code, "Not recorded")} - ${safeDocxText(rec.module_title, "Not recorded")}`,
+      "",
+      "Included files:",
+      "- JSON case record for reload into the tool",
+      "- DOCX case record",
+      "- Register form draft",
+      "- Case summary",
+      "- Initial contact email draft",
+      "- Outcome email draft",
+      "- Short and full panel summaries",
+      "- Panel pack text",
+      "",
+      "PDF note:",
+      "Use the app's Print / Save PDF button to create PDF output from the active view.",
+      "Static GitHub Pages hosting cannot silently create a browser PDF file in the same reliable way as a normal download.",
+      "",
+      `Generated on: ${new Date().toLocaleString()}`
+    ].join("
+"));
+
+    if(window.docx){
+      const { blob } = await buildDocxBlob();
+      zip.file(`${base}.docx`, await blobToUint8Array(blob));
+    }
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    saveAs(zipBlob, `${base}-package.zip`);
+  }catch(err){
+    alert("Could not build the package ZIP. See console for details.");
+    console.error(err);
+  }
 }
 function newCase(){
   Object.assign(S,{step:0,sName:"",sNum:"",prog:"",yr:"",ugpg:"UG",mName:"",mCode:"",coord:"",dSub:"",tIdx:-1,prior:"0",assessItem:"",assessType:"",setting:"coursework",extent:"",evidence:[],level:"",levelNote:"",flags:[],ctx:"",exceptionalNPR:false,tab:"contact",copied:""});
