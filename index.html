@@ -7,33 +7,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f0f2f5;
+  --bg:#eef1f6;
   --white:#ffffff;
   --panel:#ffffff;
-  --border:#e2e8f0;
-  --border-med:#cbd5e1;
-  --navy:#0f2744;
-  --navy-mid:#1a3a60;
-  --blue:#1d5fad;
-  --blue-mid:#1a54a0;
-  --blue-light:#ebf2fc;
-  --blue-xlight:#f4f8fe;
-  --gold:#a07810;
-  --gold-bg:#fdf8ec;
-  --red:#b22222;
-  --red-bg:#fef2f2;
-  --amber:#92600a;
-  --amber-bg:#fef9ed;
-  --green:#166534;
-  --green-bg:#f0faf4;
-  --text:#0f172a;
-  --text-body:#334155;
-  --text-mid:#475569;
-  --text-muted:#64748b;
-  --text-dim:#94a3b8;
-  --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
-  --radius:10px;
+  --border:#dde3ed;
+  --border-med:#c4cfe0;
+  --border-strong:#9fb2c8;
+  --navy:#0c2340;
+  --navy-mid:#163558;
+  --blue:#1a58a2;
+  --blue-mid:#174e92;
+  --blue-light:#ddeaf8;
+  --blue-xlight:#f0f6fd;
+  --gold:#8a6500;
+  --gold-bg:#fdf5e0;
+  --red:#a51d1d;
+  --red-bg:#fef1f1;
+  --amber:#7a4f00;
+  --amber-bg:#fef5e2;
+  --green:#145228;
+  --green-bg:#edf7f2;
+  --text:#0c1a2e;
+  --text-body:#2d3f55;
+  --text-mid:#3d5470;
+  --text-muted:#566d88;
+  --text-dim:#8099b4;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.09),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 14px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.05);
+  --radius:9px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
@@ -49,48 +50,51 @@ button,input,select,textarea{font:inherit;}
 
 /* ── HEADER ── */
 header{
-  background:var(--white);
-  border-bottom:1px solid var(--border);
-  box-shadow:var(--shadow-sm);
+  background:var(--navy);
+  border-bottom:3px solid #c8a020;
+  box-shadow:0 2px 12px rgba(0,0,0,.18);
   padding:0 32px;
   display:flex;
   align-items:center;
   gap:20px;
   position:sticky;top:0;z-index:100;
-  min-height:64px;
+  min-height:62px;
 }
 .hdr-logos{display:flex;align-items:center;gap:14px;flex-shrink:0;}
-.hdr-divider{width:1px;height:32px;background:var(--border-med);}
-.logo-qahe{height:30px;width:auto;}
-.logo-ulster{height:34px;width:auto;}
-.hdr-title-wrap{flex:1;padding-left:20px;border-left:1px solid var(--border);}
+.hdr-divider{width:1px;height:32px;background:rgba(255,255,255,.25);}
+.logo-qahe{height:28px;width:auto;}
+.logo-ulster{height:32px;width:auto;}
+/* Invert Ulster SVG text for dark header */
+.logo-ulster text{fill:#ffffff !important;}
+.logo-ulster rect{fill:#c8a020 !important;}
+.hdr-title-wrap{flex:1;padding-left:20px;border-left:1px solid rgba(255,255,255,.2);}
 .hdr-title{
   font-family:'Lora',Georgia,serif;
   font-size:15px;
-  color:var(--navy);
+  color:#ffffff;
   font-weight:700;
   line-height:1.25;
   letter-spacing:-.01em;
 }
 .hdr-sub{
   font-size:11px;
-  color:var(--text-muted);
+  color:rgba(255,255,255,.6);
   margin-top:2px;
   font-weight:500;
-  letter-spacing:.01em;
 }
 
 /* ── PROGRESS ── */
 .prog{
   background:var(--white);
   border-bottom:1px solid var(--border);
+  box-shadow:0 1px 0 var(--border);
   padding:0 32px;
   display:flex;
   overflow-x:auto;
 }
 .ps{
   flex:1;min-width:108px;
-  padding:11px 6px;
+  padding:12px 6px;
   display:flex;align-items:center;gap:8px;
   border-bottom:2px solid transparent;
   cursor:default;
@@ -99,15 +103,15 @@ header{
 .ps.done{border-bottom-color:var(--green);cursor:pointer;}
 .ps.act{border-bottom-color:var(--blue);}
 .pn{
-  width:20px;height:20px;border-radius:50%;
+  width:22px;height:22px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-size:10px;font-weight:700;flex-shrink:0;
-  background:#e2e8f0;color:var(--text-dim);
+  background:#dde3ed;color:var(--text-dim);
   transition:all .18s;
 }
 .ps.done .pn{background:var(--green);color:#fff;}
 .ps.act .pn{background:var(--blue);color:#fff;}
-.pl{font-size:11.5px;font-weight:600;color:var(--text-dim);white-space:nowrap;transition:all .18s;}
+.pl{font-size:12px;font-weight:600;color:var(--text-dim);white-space:nowrap;transition:all .18s;}
 .ps.done .pl{color:var(--green);}
 .ps.act .pl{color:var(--blue);}
 
@@ -115,123 +119,133 @@ header{
 .wrap{max-width:960px;margin:0 auto;padding:28px 32px 100px;}
 .step-h{
   font-family:'Lora',Georgia,serif;
-  font-size:21px;color:var(--navy);
-  margin-bottom:4px;font-weight:700;
+  font-size:22px;color:var(--navy);
+  margin-bottom:5px;font-weight:700;
   letter-spacing:-.02em;
 }
-.step-d{color:var(--text-muted);font-size:13px;margin-bottom:20px;line-height:1.5;}
+.step-d{
+  color:var(--text-muted);font-size:13px;
+  margin-bottom:22px;line-height:1.55;
+  max-width:680px;
+}
 
 /* ── CARD ── */
 .card{
   background:var(--panel);
   border:1px solid var(--border);
   border-radius:var(--radius);
-  padding:18px 20px;
-  margin-bottom:12px;
+  padding:20px 22px;
+  margin-bottom:14px;
   box-shadow:var(--shadow-sm);
 }
 .ct{
-  font-size:9.5px;letter-spacing:1.8px;
+  font-size:10px;letter-spacing:1.6px;
   color:var(--text-dim);text-transform:uppercase;
-  font-weight:700;margin-bottom:14px;
+  font-weight:700;margin-bottom:16px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--border);
 }
 
 /* ── FIELDS ── */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 @media(max-width:600px){.g2{grid-template-columns:1fr;}}
 .f{display:flex;flex-direction:column;}
 .f label{
-  font-size:10.5px;font-weight:600;
-  letter-spacing:.4px;text-transform:uppercase;
-  color:var(--text-mid);margin-bottom:5px;
+  font-size:11px;font-weight:700;
+  letter-spacing:.3px;text-transform:uppercase;
+  color:var(--text-mid);margin-bottom:6px;
 }
 .f input,.f select,.f textarea{
   background:#fff;
-  border:1px solid var(--border-med);
+  border:1.5px solid var(--border-med);
   border-radius:7px;
-  padding:8px 11px;
+  padding:9px 12px;
   color:var(--text);
-  font-size:13.5px;
+  font-size:14px;
   outline:none;
   transition:border-color .15s,box-shadow .15s;
   width:100%;
 }
 .f input:focus,.f select:focus,.f textarea:focus{
   border-color:var(--blue);
-  box-shadow:0 0 0 3px rgba(29,95,173,.1);
+  box-shadow:0 0 0 3px rgba(26,88,162,.12);
 }
+.f input::placeholder{color:var(--text-dim);}
+.f select{appearance:auto;}
 .f select option{background:#fff;}
-.f textarea{resize:vertical;line-height:1.6;}
+.f textarea{resize:vertical;line-height:1.65;}
 .hint{
-  font-size:11.5px;color:var(--text-muted);
-  line-height:1.5;margin-top:6px;
-  padding:8px 10px;
-  background:var(--blue-xlight);
+  font-size:12px;color:var(--text-muted);
+  line-height:1.55;margin-top:7px;
+  padding:8px 11px;
+  background:#f4f8fe;
   border-radius:6px;
-  border-left:3px solid #93c5fd;
+  border-left:3px solid #93bbea;
 }
 
 /* ── TYPE CARDS ── */
 .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 @media(max-width:600px){.tgrid{grid-template-columns:1fr;}}
 .tc{
-  padding:12px 14px;border-radius:8px;
+  padding:13px 14px;border-radius:8px;
   border:1.5px solid var(--border);
-  background:#fff;cursor:pointer;
+  background:#fafcff;cursor:pointer;
   transition:all .15s;
-  display:flex;gap:10px;align-items:flex-start;
+  display:flex;gap:11px;align-items:flex-start;
 }
-.tc:hover{border-color:var(--border-med);box-shadow:var(--shadow-sm);}
-.tc.sel{border-color:var(--blue);background:var(--blue-xlight);}
+.tc:hover{border-color:var(--border-med);box-shadow:var(--shadow-sm);background:#fff;}
+.tc.sel{border-color:var(--blue);background:var(--blue-xlight);box-shadow:0 0 0 1px var(--blue);}
 .rr{
-  width:15px;height:15px;border-radius:50%;
+  width:16px;height:16px;border-radius:50%;
   border:2px solid var(--border-med);
-  flex-shrink:0;margin-top:3px;
+  flex-shrink:0;margin-top:2px;
   transition:all .15s;
   display:flex;align-items:center;justify-content:center;
 }
 .tc.sel .rr{border-color:var(--blue);background:var(--blue);}
 .rd{width:5px;height:5px;border-radius:50%;background:#fff;opacity:0;transition:opacity .15s;}
 .tc.sel .rd{opacity:1;}
-.tlbl{font-weight:700;font-size:13px;margin-bottom:2px;color:var(--navy);}
-.tdsc{font-size:11px;color:var(--text-muted);line-height:1.4;margin-bottom:5px;}
+.tlbl{font-weight:700;font-size:13.5px;margin-bottom:3px;color:var(--navy);}
+.tdsc{font-size:11.5px;color:var(--text-muted);line-height:1.45;margin-bottom:6px;}
 .ft{
-  display:inline-block;padding:2px 7px;
-  border-radius:10px;font-size:9px;font-weight:700;letter-spacing:.3px;
+  display:inline-block;padding:2px 8px;
+  border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.2px;
 }
-.fPR{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
-.fNPR{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+.fPR{background:#d1fae5;color:#065f2c;border:1px solid #a7f3c8;}
+.fNPR{background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;}
 
 /* ── OFFENCE BTNS ── */
 .obrow{display:flex;gap:8px;flex-wrap:wrap;}
 .ob{
-  padding:7px 15px;border-radius:6px;
+  padding:9px 18px;border-radius:7px;
   border:1.5px solid var(--border-med);
   background:#fff;color:var(--text-mid);
   font-size:13px;font-weight:600;cursor:pointer;
   transition:all .15s;
+  line-height:1;
 }
 .ob:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-xlight);}
-.ob.act{border-color:var(--blue);background:var(--blue-light);color:var(--blue);}
+.ob.act{border-color:var(--blue);background:var(--blue-light);color:var(--navy);font-weight:700;}
 
-/* ── SEVERITY / EVIDENCE CHECKS ── */
+/* ── CHECKBOXES (severity / evidence) ── */
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 @media(max-width:560px){.sgrid{grid-template-columns:1fr;}}
 .si{
-  display:flex;align-items:center;gap:9px;
-  padding:9px 11px;border-radius:7px;
+  display:flex;align-items:center;gap:10px;
+  padding:10px 13px;border-radius:7px;
   border:1.5px solid var(--border);
-  background:#fff;cursor:pointer;transition:all .15s;
+  background:#fafcff;cursor:pointer;transition:all .15s;
   font-size:13px;color:var(--text-body);
+  line-height:1.4;
 }
-.si:hover{border-color:var(--border-med);background:#fafafa;}
+.si:hover{border-color:var(--border-med);background:#fff;}
 .si.ck{border-color:var(--blue);background:var(--blue-xlight);}
 .cb{
-  width:15px;height:15px;border-radius:4px;
-  border:1.5px solid var(--border-med);
+  width:17px;height:17px;border-radius:4px;
+  border:2px solid var(--border-med);
   flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:800;
+  font-size:11px;font-weight:800;
   transition:all .15s;color:transparent;
 }
 .si.ck .cb{background:var(--blue);border-color:var(--blue);color:#fff;}
@@ -250,9 +264,9 @@ header{
 .lc.sl-minor{border-color:var(--green);background:var(--green-bg);}
 .lc.sl-moderate{border-color:var(--amber);background:var(--amber-bg);}
 .lc.sl-major{border-color:var(--red);background:var(--red-bg);}
-.li{font-size:24px;margin-bottom:6px;}
-.ln{font-weight:700;font-size:14px;margin-bottom:3px;}
-.lh{font-size:11px;color:var(--text-muted);line-height:1.4;}
+.li{font-size:22px;margin-bottom:7px;}
+.ln{font-weight:700;font-size:15px;margin-bottom:4px;letter-spacing:-.01em;}
+.lh{font-size:11.5px;color:var(--text-muted);line-height:1.4;}
 .minor .ln{color:var(--green);}
 .moderate .ln{color:var(--amber);}
 .major .ln{color:var(--red);}
@@ -260,26 +274,27 @@ header{
 /* ── RESULT BANNER ── */
 .rbanner{
   border-radius:var(--radius);
-  padding:18px 22px;margin-bottom:16px;
+  padding:20px 24px;margin-bottom:16px;
   display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:12px;
+  flex-wrap:wrap;gap:14px;
   border-left:5px solid transparent;
   box-shadow:var(--shadow-sm);
 }
 .rb-minor{background:var(--green-bg);border-left-color:var(--green);}
 .rb-moderate{background:var(--amber-bg);border-left-color:var(--amber);}
 .rb-major{background:var(--red-bg);border-left-color:var(--red);}
-.rbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-bottom:4px;}
-.rbs{font-family:'Lora',Georgia,serif;font-size:16px;color:var(--navy);line-height:1.35;font-weight:700;}
-.pills{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
-.pill{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.rbl{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-bottom:5px;}
+.rbs{font-family:'Lora',Georgia,serif;font-size:17px;color:var(--navy);line-height:1.35;font-weight:700;}
+.pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.pill{padding:5px 14px;border-radius:5px;font-size:12px;font-weight:700;letter-spacing:.2px;}
 .p-minor{background:var(--green);color:#fff;}
 .p-moderate{background:var(--amber);color:#fff;}
 .p-major{background:var(--red);color:#fff;}
 .p-code{
   background:var(--navy);color:#fff;
   font-family:'Courier New',monospace;
-  font-size:12px;letter-spacing:.5px;
+  font-size:13px;letter-spacing:1px;
+  padding:5px 12px;
 }
 
 /* ── RESULT DETAIL ── */
@@ -287,83 +302,98 @@ header{
   background:var(--panel);
   border:1px solid var(--border);
   border-radius:var(--radius);
-  padding:16px 18px;
+  padding:18px 20px;
   margin-bottom:10px;
   box-shadow:var(--shadow-sm);
 }
 .rct{
-  font-size:9.5px;letter-spacing:1.8px;
+  font-size:10px;letter-spacing:1.6px;
   text-transform:uppercase;color:var(--text-dim);
-  font-weight:700;margin-bottom:10px;
+  font-weight:700;margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
 }
 .chip{
   display:inline-flex;align-items:center;
-  padding:4px 11px;border-radius:5px;
-  font-size:11.5px;font-weight:700;
-  margin:2px 2px 2px 0;border:1px solid transparent;
+  padding:4px 12px;border-radius:5px;
+  font-size:12px;font-weight:700;
+  margin:3px 3px 3px 0;border:1px solid transparent;
 }
-.ch-a{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
-.ch-p{background:var(--gold-bg);color:var(--gold);border-color:#fde68a;}
-.ch-r{background:var(--red-bg);color:var(--red);border-color:#fecaca;}
-.ch-d{background:var(--green-bg);color:var(--green);border-color:#bbf7d0;}
-.rtxt{font-size:13px;line-height:1.7;color:var(--text-body);}
+.ch-a{background:#dbeafe;color:#1e3a8a;border-color:#93c5fd;}
+.ch-p{background:var(--gold-bg);color:var(--gold);border-color:#e8cc80;}
+.ch-r{background:var(--red-bg);color:var(--red);border-color:#fca5a5;}
+.ch-d{background:var(--green-bg);color:var(--green);border-color:#a7f3c8;}
+.rtxt{font-size:13.5px;line-height:1.72;color:var(--text-body);}
+
+/* ── WARN / DISC ── */
 .warn{
   background:#fffbeb;
   border:1px solid #fcd34d;
   border-left:3px solid #f59e0b;
   border-radius:7px;
-  padding:10px 13px;
-  font-size:13px;color:#78350f;
+  padding:10px 14px;
+  font-size:13px;color:#6b3c00;
   line-height:1.6;margin-bottom:10px;
 }
 .disc{
   background:var(--blue-xlight);
-  border:1px solid #bfdbfe;
+  border:1px solid #bdd5f0;
   border-radius:7px;
-  padding:10px 13px;
-  font-size:12px;color:var(--text-muted);
-  line-height:1.6;margin-top:7px;
+  padding:11px 14px;
+  font-size:12.5px;color:var(--text-mid);
+  line-height:1.6;margin-top:8px;
 }
-.srow{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+
+/* ── TABLE ROWS ── */
+.srow{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
 .srow:last-child{border:none;}
-.sk{color:var(--text-dim);min-width:130px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding-top:1px;}
-.sv{color:var(--text);font-weight:600;}
+.sk{
+  color:var(--text-dim);min-width:130px;
+  font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.4px;
+  padding-top:2px;flex-shrink:0;
+}
+.sv{color:var(--text);font-weight:600;font-size:13.5px;}
 
 /* ── TABS ── */
 .tabs{
   display:flex;
-  border-bottom:1px solid var(--border);
+  border-bottom:2px solid var(--border);
   margin-bottom:18px;
   overflow-x:auto;
   gap:2px;
+  background:var(--white);
+  border-radius:var(--radius) var(--radius) 0 0;
+  padding:6px 6px 0;
+  box-shadow:var(--shadow-sm);
 }
 .tab{
-  padding:9px 16px;background:none;border:none;
+  padding:8px 15px;background:none;border:none;
   border-bottom:2px solid transparent;
   color:var(--text-muted);
-  font-size:11.5px;font-weight:600;
-  cursor:pointer;margin-bottom:-1px;
+  font-size:12px;font-weight:600;
+  cursor:pointer;margin-bottom:-2px;
   transition:all .15s;white-space:nowrap;
-  letter-spacing:.3px;border-radius:6px 6px 0 0;
+  border-radius:6px 6px 0 0;
 }
-.tab:hover{color:var(--text-mid);background:#f8fafc;}
+.tab:hover{color:var(--text-mid);background:#f0f4f8;}
 .tab.act{color:var(--blue);border-bottom-color:var(--blue);background:var(--blue-xlight);}
 
 /* ── DOC OUTPUT ── */
 pre.doc{
-  background:#f8fafc;
+  background:#f7f9fc;
   border:1px solid var(--border);
   border-radius:var(--radius);
-  padding:18px 20px;
+  padding:20px 22px;
   font-family:'Courier New',Courier,monospace;
-  font-size:11.5px;line-height:1.85;
+  font-size:12px;line-height:1.85;
   color:var(--text-body);
   overflow-x:auto;white-space:pre-wrap;word-break:break-word;
 }
 
 /* ── BUTTONS ── */
 .btn{
-  padding:9px 18px;
+  padding:9px 20px;
   border-radius:7px;
   font-size:13.5px;font-weight:600;
   cursor:pointer;border:none;
@@ -371,8 +401,15 @@ pre.doc{
   display:inline-flex;align-items:center;gap:6px;
   letter-spacing:.01em;
 }
-.btn-primary{background:var(--blue);color:#fff;box-shadow:0 1px 3px rgba(29,95,173,.3);}
-.btn-primary:hover{background:var(--blue-mid);box-shadow:0 3px 8px rgba(29,95,173,.35);transform:translateY(-1px);}
+.btn-primary{
+  background:var(--blue);color:#fff;
+  box-shadow:0 1px 4px rgba(26,88,162,.35);
+}
+.btn-primary:hover{
+  background:var(--blue-mid);
+  box-shadow:0 3px 10px rgba(26,88,162,.4);
+  transform:translateY(-1px);
+}
 .btn-ghost{
   background:#fff;
   border:1.5px solid var(--border-med);
@@ -381,23 +418,23 @@ pre.doc{
 .btn-ghost:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-xlight);}
 .btn-outline{background:#fff;border:1.5px solid var(--blue);color:var(--blue);}
 .btn-outline:hover{background:var(--blue-light);}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
+.btn:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
 .crow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 
 /* ── NAV BAR ── */
 .nav{
   position:fixed;bottom:0;left:0;right:0;
   background:rgba(255,255,255,.97);
-  backdrop-filter:blur(8px);
+  backdrop-filter:blur(10px);
   border-top:1px solid var(--border);
-  box-shadow:0 -2px 16px rgba(0,0,0,.07);
-  padding:11px 32px;
+  box-shadow:0 -2px 18px rgba(0,0,0,.09);
+  padding:12px 32px;
   display:flex;justify-content:space-between;align-items:center;
   z-index:99;
 }
 .nav-info{
   font-size:12px;color:var(--text-dim);font-weight:600;
-  background:var(--bg);padding:4px 12px;border-radius:20px;
+  background:var(--bg);padding:5px 14px;border-radius:20px;
   border:1px solid var(--border);
 }
 
@@ -405,7 +442,7 @@ pre.doc{
 @media print{
   header,.prog,.nav,.tabs,.crow,.btn{display:none!important;}
   body{background:#fff;}
-  pre.doc{border:1px solid #ccc;font-size:10px;}
+  pre.doc{border:1px solid #ccc;font-size:10.5px;}
 }
 </style>
 </head>
@@ -418,15 +455,15 @@ pre.doc{
     <svg class="logo-qahe" viewBox="0 0 118 36" xmlns="http://www.w3.org/2000/svg" aria-label="QA Higher Education">
       <circle cx="17" cy="18" r="16" fill="#e8001d"/>
       <text x="17" y="22.5" font-family="Arial Black,Arial,sans-serif" font-size="13.5" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">QA</text>
-      <text x="40" y="13.5" font-family="Arial,sans-serif" font-size="8.5" font-weight="700" fill="#0f2744" letter-spacing="0.8">HIGHER</text>
-      <text x="40" y="24" font-family="Arial,sans-serif" font-size="8.5" font-weight="700" fill="#0f2744" letter-spacing="0.8">EDUCATION</text>
+      <text x="40" y="13.5" font-family="Arial,sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" letter-spacing="0.8">HIGHER</text>
+      <text x="40" y="24" font-family="Arial,sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" letter-spacing="0.8">EDUCATION</text>
     </svg>
     <div class="hdr-divider"></div>
     <!-- Ulster University logo -->
     <svg class="logo-ulster" viewBox="0 0 148 36" xmlns="http://www.w3.org/2000/svg" aria-label="Ulster University">
-      <text x="1" y="15" font-family="Georgia,'Times New Roman',serif" font-size="13.5" font-weight="700" fill="#0f2744" letter-spacing="0.2">Ulster</text>
-      <rect x="1" y="18.5" width="70" height="1.5" fill="#a07810"/>
-      <text x="1" y="32" font-family="Georgia,'Times New Roman',serif" font-size="13.5" font-weight="700" fill="#0f2744" letter-spacing="0.2">University</text>
+      <text x="1" y="15" font-family="Georgia,'Times New Roman',serif" font-size="13.5" font-weight="700" fill="#ffffff" letter-spacing="0.2">Ulster</text>
+      <rect x="1" y="18.5" width="70" height="1.5" fill="#c8a020"/>
+      <text x="1" y="32" font-family="Georgia,'Times New Roman',serif" font-size="13.5" font-weight="700" fill="#ffffff" letter-spacing="0.2">University</text>
     </svg>
   </div>
   <div class="hdr-title-wrap">
@@ -694,7 +731,7 @@ function genPanelSummaryShort(){
     lines.push("Rationale:");
     lines.push(safe(S.levelNote));
   }
-  return lines.join("\\n");
+  return lines.join("\n");
 }
 function genPanelSummaryFull(){
   const t = currentTypeObj();
@@ -742,7 +779,7 @@ function genPanelSummaryFull(){
     lines.push("Reviewer Recommendation / Rationale:");
     lines.push(safe(S.levelNote));
   }
-  return lines.join("\\n");
+  return lines.join("\n");
 }
 function genDecisionSummaryText(){
   const d = decide();
@@ -755,7 +792,7 @@ function genDecisionSummaryText(){
   lines.push("Route: " + safe(d ? (d.panel==="Faculty" ? "Higher-level internal QAHE review / Faculty-stage equivalent" : "Local QAHE School-stage panel") : "[Not available]"));
   lines.push("Outcome: " + safe(panelPenaltyText(d)));
   if(d && d.code) lines.push("Register Code: " + safe(d.code));
-  return lines.join("\\n");
+  return lines.join("\n");
 }
 function genPanelPack(){
   const parts = [];
@@ -768,7 +805,14 @@ function genPanelPack(){
   parts.push(genCaseSummary());
   parts.push("------------------------------------------------------------");
   parts.push(genDecisionSummaryText());
-  return parts.join("\\n");
+  return parts.join("\n");
+}
+function escapeHtml(s){
+  return String(s||"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
 }
 function printPanelSummary(mode){
   const summary = mode==="full" ? genPanelSummaryFull() : genPanelSummaryShort();
@@ -777,7 +821,7 @@ function printPanelSummary(mode){
   if(!w) return;
   const txt = escapeHtml(summary).replace(/\n/g,"<br>");
   w.document.open();
-  w.document.write("<!doctype html><html><head><meta charset='utf-8'><title>"+title+"</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111827;line-height:1.45}h1{font-size:20px;margin-bottom:16px}.box{white-space:normal;border:1px solid #d1d5db;border-radius:10px;padding:16px;background:#fff}</style></head><body><h1></h1><div class='box'></div></body></html>");
+  w.document.write("<!doctype html><html><head><meta charset='utf-8'><title>"+title+"</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111827;line-height:1.45}h1{font-size:20px;margin-bottom:16px}.box{white-space:normal;border:1px solid #d1d5db;border-radius:10px;padding:16px;background:#fff}<\/style><\/head><body><h1></h1><div class='box'></div><\/body><\/html>");
   w.document.close();
   w.document.title = title;
   w.document.querySelector("h1").textContent = title;
@@ -791,7 +835,7 @@ function printPanelPack(){
   if(!w) return;
   const title = "Academic Misconduct Panel Pack";
   w.document.open();
-  w.document.write("<!doctype html><html><head><meta charset='utf-8'><title>"+title+"</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111827;line-height:1.45;background:#fff}h1{font-size:22px;margin:0 0 16px 0}.box{border:1px solid #d1d5db;border-radius:10px;padding:18px;background:#fff}@media print{body{padding:10mm}.box{border:none;padding:0}}</style></head><body><h1></h1><div class='box'></div></body></html>");
+  w.document.write("<!doctype html><html><head><meta charset='utf-8'><title>"+title+"</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111827;line-height:1.45;background:#fff}h1{font-size:22px;margin:0 0 16px 0}.box{border:1px solid #d1d5db;border-radius:10px;padding:18px;background:#fff}@media print{body{padding:10mm}.box{border:none;padding:0}}<\/style><\/head><body><h1></h1><div class='box'></div><\/body><\/html>");
   w.document.close();
   w.document.title = title;
   w.document.querySelector("h1").textContent = title;
@@ -1045,131 +1089,313 @@ function genEmail(){
 // ════════════════ STEP RENDERERS ════════════════
 
 function s0(){
+  const r = decide();
+  const suggestedRoute = r
+    ? (r.panel==="Faculty"||r.level==="Major"||r.referral
+        ? "Higher-level internal QAHE review / Faculty-stage equivalent"
+        : "Local QAHE School-stage panel")
+    : null;
+
+  const steps = [
+    {
+      phase:"detect", num:1, icon:"🔍", title:"Tutor or Assessor Flags the Concern",
+      body:"A marker, invigilator, or tutor identifies a possible issue and informs the Module Leader with the relevant evidence.",
+      tag:"Detection"
+    },
+    {
+      phase:"review", num:2, icon:"📂", title:"Module Leader Reviews the Evidence",
+      body:"Review the work alongside any available evidence: similarity report, AI indicators, invigilator note, matching submissions, metadata, or viva concerns.",
+      tag:"Local Review"
+    },
+    {
+      phase:"review", num:3, icon:"👥", title:"Inform Local Academic Leads",
+      body:"Share a short factual summary with the Course Director and Deputy Course Director before contacting the student.",
+      tag:"Local Review"
+    },
+    {
+      phase:"contact", num:4, icon:"✉️", title:"Contact the Student in Writing",
+      body:"Inform the student of the concern, the affected assessment, and the evidence available. Invite them to a meeting. Retain a written record.",
+      tag:"Student Contact"
+    },
+    {
+      phase:"contact", num:5, icon:"🗓️", title:"Hold the Meeting",
+      body:"Usually a Teams call. Hear and note the student's explanation. The aim is to share the concern formally and give the student the opportunity to respond.",
+      tag:"Student Contact"
+    },
+    {
+      phase:"decide", num:6, icon:"⚖️", title:"Make a Local Recommendation",
+      body:"Identify the likely misconduct type and level of concern. This is an initial recommendation — the appropriate panel confirms the final type and level.",
+      tag:"Decision"
+    },
+    {
+      phase:"route", num:7, icon:"🔀", title:"Route the Case",
+      body: suggestedRoute
+        ? `<strong>Suggested route for this case:</strong> <span style="color:var(--blue);font-weight:700">${suggestedRoute}</span>.`
+        : "Complete Steps 2–5 of this tool and return here — the recommended route will appear based on your inputs.",
+      tag:"Routing"
+    },
+    {
+      phase:"docs", num:8, icon:"📄", title:"Complete the Form and Evidence Pack",
+      body:"Fill in the case summary, register-style form, and email trail. Bundle the supporting evidence. Submit onward through the designated contact point if required.",
+      tag:"Documentation"
+    },
+    {
+      phase:"docs", num:9, icon:"📬", title:"Communicate the Outcome",
+      body:"Once confirmed, write to the student within the required timescale. If the case is being referred onward rather than decided locally, make that explicit.",
+      tag:"Documentation"
+    },
+  ];
+
+  const phaseColour = {
+    detect:  { bg:"#eff6ff", border:"#93c5fd", text:"#1d4ed8", dot:"#3b82f6" },
+    review:  { bg:"#f0fdf4", border:"#86efac", text:"#15803d", dot:"#22c55e" },
+    contact: { bg:"#fff7ed", border:"#fdba74", text:"#c2410c", dot:"#f97316" },
+    decide:  { bg:"#faf5ff", border:"#d8b4fe", text:"#7e22ce", dot:"#a855f7" },
+    route:   { bg:"#ecfeff", border:"#67e8f9", text:"#0e7490", dot:"#06b6d4" },
+    docs:    { bg:"#f8fafc", border:"#cbd5e1", text:"#475569", dot:"#94a3b8" },
+  };
+
+  const stepsHtml = steps.map((s, idx) => {
+    const c = phaseColour[s.phase];
+    const isLast = idx === steps.length - 1;
+    return `
+<div style="display:flex;gap:0;align-items:stretch;">
+  <!-- Spine: number circle + connector line -->
+  <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:44px;">
+    <div style="
+      width:36px;height:36px;border-radius:50%;
+      background:${c.dot};color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:800;font-family:'Inter',sans-serif;
+      box-shadow:0 2px 6px ${c.dot}55;
+      flex-shrink:0;z-index:1;
+    ">${s.num}</div>
+    ${!isLast ? `<div style="width:2px;flex:1;min-height:16px;background:linear-gradient(to bottom,${c.dot}80,${phaseColour[steps[idx+1].phase].dot}80);margin-top:2px;"></div>` : ""}
+  </div>
+  <!-- Card -->
+  <div style="
+    flex:1;margin-left:12px;margin-bottom:${isLast?"0":"10px"};
+    background:${c.bg};border:1px solid ${c.border};border-radius:9px;
+    padding:12px 15px;
+  ">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+      <span style="font-size:16px;line-height:1">${s.icon}</span>
+      <span style="font-size:13px;font-weight:700;color:${c.text};letter-spacing:-.01em">${s.title}</span>
+      <span style="margin-left:auto;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${c.text};opacity:.7;white-space:nowrap;padding:2px 7px;border:1px solid ${c.border};border-radius:10px;background:white;">${s.tag}</span>
+    </div>
+    <div style="font-size:12.5px;color:#374151;line-height:1.6;">${s.body}</div>
+  </div>
+</div>`;
+  }).join("");
+
+  const policyNotes = [
+    { icon:"📌", text:"Plagiarism-related offences: plagiarism, self-plagiarism, inappropriate AI use." },
+    { icon:"📌", text:"Non-plagiarism-related offences: collusion, cheating, impersonation, contract cheating, fabrication / falsification." },
+    { icon:"⚠️", text:"Collusion, cheating, impersonation, contract cheating, and fabrication / falsification normally start at Moderate or Major — they imply intent." },
+    { icon:"🔼", text:"Major concerns are referred onward under the Procedure. A referral is not itself a penalty and is not appealable." },
+    { icon:"🔢", text:"All offences are cumulative regardless of type. A prior plagiarism offence counts when considering a later collusion case." },
+    { icon:"🤖", text:"Similarity reports and AI detectors support judgement but must not be used as the sole basis for a finding." },
+    { icon:"📏", text:"Use 'Approximate Extent Affected' for how much of the assessment appears affected — not how serious it feels." },
+    { icon:"🔍", text:"Use 'Additional Seriousness Indicators' for features that raise the level: clear intent, coordinated behaviour, timed setting." },
+    { icon:"✅", text:"This tool gives a decision recommendation only. Final classification, level of concern, and penalty must be confirmed by the appropriate Panel." },
+  ];
+
+  const policyHtml = policyNotes.map(n => `
+<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+  <span style="font-size:14px;flex-shrink:0;margin-top:1px">${n.icon}</span>
+  <span style="font-size:12.5px;color:var(--text-body);line-height:1.55">${n.text}</span>
+</div>`).join("");
+
   return `<div class="step-h">Workflow Guidance and Policy Quick Notes</div>
-<div class="step-d">Start here first. This screen is for new module leaders and assessors who want a quick reminder of the local workflow and the key policy points before entering a live case or testing a scenario.</div>
+<div class="step-d">Start here first — a visual reminder of the local QAHE workflow and the key policy points. Student details are optional; you can use this tool for scenario testing or staff training without entering a live case.</div>
+
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
-  <div class="card">
-    <div class="ct">Workflow Guidance</div>
-    <pre class="doc" style="max-height:none">${E(genWorkflowGuide())}</pre>
+
+  <!-- LEFT: Visual workflow -->
+  <div class="card" style="padding:20px 20px 20px 16px;">
+    <div class="ct">Local QAHE Workflow — 9 Steps</div>
+    ${stepsHtml}
   </div>
-  <div class="card">
-    <div class="ct">Policy Quick Notes</div>
-    <pre class="doc" style="max-height:none">${E(genPolicyQuickNotes())}</pre>
+
+  <!-- RIGHT: Policy notes + tools -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card">
+      <div class="ct">Policy Quick Notes</div>
+      ${policyHtml}
+      <div style="padding-top:8px;font-size:11.5px;color:var(--text-dim);line-height:1.5">
+        Based on the Ulster University Student Academic Misconduct Procedure (2025), Appendix 1.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Case Record Tools</div>
+      <p style="font-size:13px;color:var(--text-body);margin-bottom:12px;line-height:1.55">Save the current case as a JSON record to reopen later or pass to the Python DOCX generator.</p>
+      <div class="crow">
+        <button class="btn btn-outline" onclick="saveCaseJson()">💾 Save Case JSON</button>
+        <button class="btn btn-ghost" onclick="loadCaseJsonClick()">📂 Load Case JSON</button>
+      </div>
+      <div class="hint" style="margin-top:10px">Workflow: save JSON → review or amend → generate DOCX → save a PDF snapshot for filing.</div>
+    </div>
+
+    ${suggestedRoute ? `<div class="disc" style="padding:14px 16px;">
+      <strong style="color:var(--blue)">📍 Suggested route for this case:</strong><br>
+      <span style="font-size:13px;color:var(--text-body)">${suggestedRoute}</span>
+    </div>` : ""}
   </div>
-</div>
-<div class="card" style="margin-top:12px">
-  <div class="ct">Case Record Tools</div>
-  <p style="color:var(--text-body);margin-bottom:12px">Save the current case as a JSON record, then reuse the same file later to reopen the case in the app or generate a DOCX with the companion Python script.</p>
-  <div class="crow">
-    <button class="btn btn-outline" onclick="saveCaseJson()">💾 Save Case JSON</button>
-    <button class="btn btn-ghost" onclick="loadCaseJsonClick()">📂 Load Case JSON</button>
-  </div>
-</div>
-<div class="warn" style="margin-top:12px">Student and module details are optional in the next step. That means you can use this tool either for a live case or just to test a scenario and understand the likely route.</div>`;
+
+</div>`;
 }
 
 function s1(){
   return `<div class="step-h">Case Details</div>
-<div class="step-d">Enter student and module details if this is a live case. You can also leave them blank and use the tool for scenario testing or staff training.</div>
-<div class="card"><div class="ct">Optional Student Information</div>
-<div class="g2">
-  <div class="f"><label>Student Full Name</label><input value="${E(S.sName)}" placeholder="e.g. Jane Smith" oninput="S.sName=this.value"></div>
-  <div class="f"><label>Student Number</label><input value="${E(S.sNum)}" placeholder="e.g. B00123456" oninput="S.sNum=this.value"></div>
-  <div class="f"><label>Programme of Study</label><input value="${E(S.prog)}" placeholder="e.g. BSc Computer Science" oninput="S.prog=this.value"></div>
-  <div class="f"><label>Year of Study</label><input value="${E(S.yr)}" placeholder="e.g. 2" oninput="S.yr=this.value"></div>
-  <div class="f"><label>Level</label><select onchange="S.ugpg=this.value"><option value="UG" ${S.ugpg==="UG"?"selected":""}>Undergraduate (UG)</option><option value="PG" ${S.ugpg==="PG"?"selected":""}>Postgraduate (PG)</option></select></div>
-</div></div>
-<div class="card"><div class="ct">Optional Module Information</div>
-<div class="g2">
-  <div class="f"><label>Module Name</label><input value="${E(S.mName)}" placeholder="e.g. Research Methods" oninput="S.mName=this.value"></div>
-  <div class="f"><label>Module Code</label><input value="${E(S.mCode)}" placeholder="e.g. COM501" oninput="S.mCode=this.value"></div>
-  <div class="f"><label>Module Coordinator</label><input value="${E(S.coord)}" placeholder="e.g. Dr A. Smith" oninput="S.coord=this.value"></div>
-  <div class="f"><label>Date Submitted</label><input type="date" id="dateSubmitted" oninput="S.dSub=this.value"></div>
-</div></div>`;
+<div class="step-d">Enter student and module details for a live case, or leave blank to test a scenario. All fields are optional at this step.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div class="card">
+  <div class="ct">Student Information</div>
+  <div style="display:flex;flex-direction:column;gap:13px">
+    <div class="f"><label>Student Full Name</label><input value="${E(S.sName)}" placeholder="e.g. Jane Smith" oninput="S.sName=this.value"></div>
+    <div class="f"><label>Student Number</label><input value="${E(S.sNum)}" placeholder="e.g. B00123456" oninput="S.sNum=this.value"></div>
+    <div class="f"><label>Programme of Study</label><input value="${E(S.prog)}" placeholder="e.g. BSc Computer Science" oninput="S.prog=this.value"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="f"><label>Year of Study</label><input value="${E(S.yr)}" placeholder="e.g. 2" oninput="S.yr=this.value"></div>
+      <div class="f"><label>Level</label><select onchange="S.ugpg=this.value"><option value="UG" ${S.ugpg==="UG"?"selected":""}>UG</option><option value="PG" ${S.ugpg==="PG"?"selected":""}>PG</option></select></div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="ct">Module Information</div>
+  <div style="display:flex;flex-direction:column;gap:13px">
+    <div class="f"><label>Module Name</label><input value="${E(S.mName)}" placeholder="e.g. Research Methods" oninput="S.mName=this.value"></div>
+    <div class="f"><label>Module Code</label><input value="${E(S.mCode)}" placeholder="e.g. COM501" oninput="S.mCode=this.value"></div>
+    <div class="f"><label>Module Coordinator</label><input value="${E(S.coord)}" placeholder="e.g. Dr A. Smith" oninput="S.coord=this.value"></div>
+    <div class="f"><label>Date Submitted</label><input type="date" id="dateSubmitted" oninput="S.dSub=this.value"></div>
+  </div>
+</div>
+</div>`;
 }
 
 function s2(){
+  const priorOpts = [
+    {v:"0", main:"None", sub:"1st offence"},
+    {v:"1", main:"1 prior", sub:"2nd offence"},
+    {v:"2", main:"2 prior", sub:"3rd offence"},
+    {v:"3+", main:"3 or more", sub:"4th+ offence"},
+  ];
   return `<div class="step-h">Type of Misconduct</div>
-<div class="step-d">Select the category that best describes what was found. Record all prior offences — they are cumulative across all types.</div>
-<div class="card"><div class="ct">Misconduct Category ✱</div>
-<div class="tgrid">
+<div class="step-d">Select the category that best describes what was found. Offences are cumulative — a prior plagiarism offence still counts when recording a collusion case.</div>
+<div class="card">
+  <div class="ct">Misconduct Category</div>
+  <div class="tgrid">
 ${TYPES.map((t,i)=>`<div class="tc${S.tIdx===i?" sel":""}" onclick="S.tIdx=${i};S.level='';render()">
   <div class="rr"><div class="rd"></div></div>
-  <div><div class="tlbl">${t.id}</div><div class="tdsc">${t.desc}</div>
-  <span class="ft f${t.fam}">${t.fam==="PR"?"Plagiarism-Related":"Non-Plagiarism-Related"}</span></div>
+  <div style="flex:1">
+    <div class="tlbl">${t.id}</div>
+    <div class="tdsc">${t.desc}</div>
+    <span class="ft f${t.fam}">${t.fam==="PR"?"Plagiarism-Related":"Non-Plagiarism-Related"}</span>
+  </div>
 </div>`).join("")}
-</div></div>
-<div class="card"><div class="ct">Prior Academic Misconduct Offences on Record</div>
-<p style="font-size:12px;color:var(--text-muted);margin-bottom:11px;line-height:1.5">Count all prior offences regardless of type — offences are cumulative across all categories under the Procedure.</p>
-<div class="obrow">
-${[["0","None (1st offence)"],["1","1 prior (2nd offence)"],["2","2 prior (3rd offence)"],["3+","3 or more prior"]].map(([v,l])=>
-  `<button class="ob${S.prior===v?" act":""}" onclick="S.prior='${v}';render()">${l}</button>`).join("")}
-</div></div>`;
+  </div>
+</div>
+<div class="card">
+  <div class="ct">Prior Offences on Record</div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">Count all prior findings regardless of type — the register is cumulative across all categories.</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+${priorOpts.map(({v,main,sub})=>`
+  <button class="ob${S.prior===v?" act":""}" onclick="S.prior='${v}';render()" style="display:flex;flex-direction:column;align-items:center;padding:12px 8px;gap:2px;">
+    <span style="font-size:15px;font-weight:700;line-height:1">${main}</span>
+    <span style="font-size:11px;opacity:.7;font-weight:500">${sub}</span>
+  </button>`).join("")}
+  </div>
+</div>`;
 }
 
 function s3(){
   const t=S.tIdx>=0?TYPES[S.tIdx]:null;
   const aiNote=t&&t.id==="Inappropriate AI Use";
   return `<div class="step-h">Evidence &amp; Assessment Context</div>
-<div class="step-d">Record what assessment this was, how much appears affected, what evidence is available, and a short factual summary. This step is about context and evidence only.</div>
-<div class="card"><div class="ct">Assessment Context ✱</div>
-<div class="g2">
-  <div class="f"><label>Assessment Name / Item</label>
-    <input value="${E(S.assessItem)}" placeholder="e.g. Coursework 1, Coursework 2, Class Test, Assessment 1, Presentation" oninput="S.assessItem=this.value">
-    <div class="hint">Use local wording such as CW1, CW2, class test, assignment, report, viva, IEEE paper, or supporting document.</div>
+<div class="step-d">Record the assessment, how much appears affected, what evidence is available, and a brief factual narrative. The level of concern comes in the next step.</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+  <div class="card" style="margin-bottom:0">
+    <div class="ct">Assessment Details</div>
+    <div style="display:flex;flex-direction:column;gap:13px">
+      <div class="f">
+        <label>Assessment Name / Item</label>
+        <input value="${E(S.assessItem)}" placeholder="e.g. CW1, Class Test, Report, Viva" oninput="S.assessItem=this.value">
+      </div>
+      <div class="f">
+        <label>Assessment Type <span style="color:var(--red);font-size:12px">required</span></label>
+        <select onchange="S.assessType=this.value">
+          <option value="" ${S.assessType===""?"selected":""}>Select type...</option>
+          <option value="Coursework 1" ${S.assessType==="Coursework 1"?"selected":""}>Coursework 1</option>
+          <option value="Coursework 2" ${S.assessType==="Coursework 2"?"selected":""}>Coursework 2</option>
+          <option value="Assignment" ${S.assessType==="Assignment"?"selected":""}>Assignment</option>
+          <option value="Class Test" ${S.assessType==="Class Test"?"selected":""}>Class Test</option>
+          <option value="Exam" ${S.assessType==="Exam"?"selected":""}>Exam</option>
+          <option value="Report" ${S.assessType==="Report"?"selected":""}>Report</option>
+          <option value="Presentation / PPT" ${S.assessType==="Presentation / PPT"?"selected":""}>Presentation / PPT</option>
+          <option value="Viva" ${S.assessType==="Viva"?"selected":""}>Viva</option>
+          <option value="IEEE Paper" ${S.assessType==="IEEE Paper"?"selected":""}>IEEE Paper</option>
+          <option value="Supporting Document" ${S.assessType==="Supporting Document"?"selected":""}>Supporting Document</option>
+          <option value="Practical / Code" ${S.assessType==="Practical / Code"?"selected":""}>Practical / Code</option>
+          <option value="Dissertation / Project" ${S.assessType==="Dissertation / Project"?"selected":""}>Dissertation / Project</option>
+          <option value="Other" ${S.assessType==="Other"?"selected":""}>Other</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Setting <span style="color:var(--red);font-size:12px">required</span></label>
+        <select onchange="S.setting=this.value">
+          <option value="coursework" ${S.setting==="coursework"?"selected":""}>Coursework / take-home</option>
+          <option value="exam" ${S.setting==="exam"?"selected":""}>Timed / controlled (class test or exam)</option>
+          <option value="presentation" ${S.setting==="presentation"?"selected":""}>Presentation / viva / live demonstration</option>
+        </select>
+      </div>
+    </div>
   </div>
-  <div class="f"><label>Assessment Type ✱</label>
-    <select onchange="S.assessType=this.value">
-      <option value="" ${S.assessType===""?"selected":""}>Select assessment type</option>
-      <option value="Coursework 1" ${S.assessType==="Coursework 1"?"selected":""}>Coursework 1</option>
-      <option value="Coursework 2" ${S.assessType==="Coursework 2"?"selected":""}>Coursework 2</option>
-      <option value="Assignment" ${S.assessType==="Assignment"?"selected":""}>Assignment</option>
-      <option value="Class Test" ${S.assessType==="Class Test"?"selected":""}>Class Test</option>
-      <option value="Exam" ${S.assessType==="Exam"?"selected":""}>Exam</option>
-      <option value="Report" ${S.assessType==="Report"?"selected":""}>Report</option>
-      <option value="Presentation / PPT" ${S.assessType==="Presentation / PPT"?"selected":""}>Presentation / PPT</option>
-      <option value="Viva" ${S.assessType==="Viva"?"selected":""}>Viva</option>
-      <option value="IEEE Paper" ${S.assessType==="IEEE Paper"?"selected":""}>IEEE Paper</option>
-      <option value="Supporting Document" ${S.assessType==="Supporting Document"?"selected":""}>Supporting Document</option>
-      <option value="Practical / Code" ${S.assessType==="Practical / Code"?"selected":""}>Practical / Code</option>
-      <option value="Dissertation / Project" ${S.assessType==="Dissertation / Project"?"selected":""}>Dissertation / Project</option>
-      <option value="Other" ${S.assessType==="Other"?"selected":""}>Other</option>
-    </select>
+  <div class="card" style="margin-bottom:0">
+    <div class="ct">Extent Affected <span style="color:var(--red);font-weight:400;letter-spacing:0;font-size:10px;text-transform:none">required</span></div>
+    <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:13px;line-height:1.5">How much of the assessment appears affected — not how serious the case feels.</p>
+    <div style="display:flex;flex-direction:column;gap:7px">
+${[
+  {v:"under20", label:"Up to about 20%",        desc:"Small or partial section only"},
+  {v:"20to50",  label:"About 20 to 50%",         desc:"A noticeable proportion"},
+  {v:"over50",  label:"50% or more",             desc:"A large part affected"},
+  {v:"whole",   label:"Whole or almost whole",   desc:"Entire submission affected"},
+].map(({v,label,desc})=>`
+      <div onclick="S.extent='${v}';render()" style="display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:7px;border:1.5px solid ${S.extent===v?"var(--blue)":"var(--border)"};background:${S.extent===v?"var(--blue-xlight)":"#fafcff"};cursor:pointer;transition:all .15s;">
+        <div style="width:16px;height:16px;border-radius:50%;flex-shrink:0;border:2px solid ${S.extent===v?"var(--blue)":"var(--border-med)"};background:${S.extent===v?"var(--blue)":"transparent"};display:flex;align-items:center;justify-content:center;">
+          <div style="width:5px;height:5px;border-radius:50%;background:#fff;opacity:${S.extent===v?1:0}"></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy)">${label}</div>
+          <div style="font-size:11.5px;color:var(--text-muted)">${desc}</div>
+        </div>
+      </div>`).join("")}
+    </div>
   </div>
-  <div class="f"><label>Assessment Setting ✱</label>
-    <select onchange="S.setting=this.value">
-      <option value="coursework" ${S.setting==="coursework"?"selected":""}>Coursework / take-home setting</option>
-      <option value="exam" ${S.setting==="exam"?"selected":""}>Timed / controlled setting (class test or exam)</option>
-      <option value="presentation" ${S.setting==="presentation"?"selected":""}>Presentation / viva / live demonstration</option>
-    </select>
-  </div>
-  <div class="f"><label>Approximate Extent Affected ✱</label>
-    <select onchange="S.extent=this.value">
-      <option value="" ${S.extent===""?"selected":""}>Select extent</option>
-      <option value="under20" ${S.extent==="under20"?"selected":""}>Small part only (up to about 20%)</option>
-      <option value="20to50" ${S.extent==="20to50"?"selected":""}>Noticeable part (about 20% to 50%)</option>
-      <option value="over50" ${S.extent==="over50"?"selected":""}>Large part (about 50% or more)</option>
-      <option value="whole" ${S.extent==="whole"?"selected":""}>Whole or almost whole assessment affected</option>
-    </select>
-    <div class="hint">This field is only about <strong>how much of the assessment appears affected</strong>. Example: AI use in about 40% of a class test → “Noticeable part”. Similarity in almost the full report → “Whole or almost whole”.</div>
-  </div>
-</div></div>
-<div class="card"><div class="ct">Evidence Available</div>
-<p style="font-size:14px;color:#4b5563;margin-bottom:12px;line-height:1.55">Select the evidence currently available. Similarity and AI indicators support judgement but should not be used alone.</p>
-<div class="sgrid">
+</div>
+
+<div class="card">
+  <div class="ct">Evidence Available</div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:13px">Tick all evidence currently available. Similarity scores and AI indicators support judgement but must not be used as the sole basis for a finding.</p>
+  <div class="sgrid">
 ${EVIDENCE.map(s=>`<div class="si${S.evidence.includes(s.id)?" ck":""}" onclick="togList('evidence','${s.id}')">
   <div class="cb">${S.evidence.includes(s.id)?"✓":""}</div>
   <span>${s.text}</span>
 </div>`).join("")}
+  </div>
+  ${aiNote?`<div class="warn" style="margin-top:13px">AI use is not automatically misconduct. The concern is normally inappropriate or unacknowledged use, fabricated content, or use beyond what the assessment instructions permitted.</div>`:""}
 </div>
-${aiNote?`<div class="warn" style="margin-top:12px">AI use is not automatically misconduct. The concern is normally inappropriate or unacknowledged AI use, fabricated content, or use beyond what the assessment allowed.</div>`:""}
-</div>
-<div class="card"><div class="ct">Brief Case Narrative</div>
-<div class="f">
-  <label>What was found?</label>
-  <textarea rows="5" placeholder="Write a short factual summary, e.g. During the class test, the student appeared to access unauthorised AI support. Approximately 40% of the submitted answers appear affected. An invigilator note and script review are available.&#10;&#10;Or: Two students submitted highly similar PPT slides and speaker notes. Matching structure, wording and examples suggest unauthorised collaboration." oninput="S.ctx=this.value">${E(S.ctx||"")}</textarea>
-</div></div>`;
+
+<div class="card">
+  <div class="ct">Brief Case Narrative</div>
+  <div class="f">
+    <label style="margin-bottom:8px">What was found — short factual summary</label>
+    <textarea rows="5" style="font-size:14px;line-height:1.65;" placeholder="e.g. During the class test, the student appeared to access unauthorised AI support. Approximately 40% of the submitted answers appear affected. An invigilator note and script review are available.&#10;&#10;OR: Two students submitted highly similar PPT slides and speaker notes. Matching structure, wording and examples suggest unauthorised collaboration." oninput="S.ctx=this.value">${E(S.ctx||"")}</textarea>
+  </div>
+</div>`;
 }
+
 
 function s4(){
   const t=S.tIdx>=0?TYPES[S.tIdx]:null;
@@ -1177,171 +1403,275 @@ function s4(){
   const isNPR=t&&t.fam==="NPR";
   const prior=S.prior==="3+"?3:parseInt(S.prior||"0",10);
   const referralWarn=(t&&((t.fam==="PR"&&S.level==="Moderate"&&prior>=2)||(t.fam==="NPR"&&S.level==="Moderate"&&prior>=1)))
-    ?`<div class="warn" style="margin-top:11px">⚠️ Under Appendix 1, this combination is referral only. No School-stage penalty is imposed. The case should be referred onward for investigation as a Major level of concern.</div>`:"";
+    ?`<div class="warn">Under Appendix 1, this combination results in a referral only — no School-stage penalty is imposed. The case should be referred onward for investigation as a Major level of concern.</div>`:"";
   const nprMinorWarn=isNPR&&S.level==="Minor"&&!S.exceptionalNPR;
   const nprMinorRepeatWarn=isNPR&&S.level==="Minor"&&S.exceptionalNPR&&S.prior!=="0";
   const minorDisabled=isNPR&&!S.exceptionalNPR;
+
+  const sugBadge = sug ? `
+  <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 15px;border-radius:8px;background:${sug==="Major"?"var(--red-bg)":sug==="Minor"?"var(--green-bg)":"var(--amber-bg)"};border:1.5px solid ${sug==="Major"?"var(--red)":sug==="Minor"?"var(--green)":"var(--amber)"}">
+    <div style="width:10px;height:10px;border-radius:50%;flex-shrink:0;background:${sug==="Major"?"var(--red)":sug==="Minor"?"var(--green)":"var(--amber)"}"></div>
+    <div>
+      <span style="font-size:12px;font-weight:600;color:var(--text-mid)">Suggested level: </span>
+      <strong style="font-size:14px;color:${sug==="Major"?"var(--red)":sug==="Minor"?"var(--green)":"var(--amber)"}">${sug}</strong>
+      <span style="font-size:12px;color:var(--text-muted)"> — based on offence family, extent, prior offences, and seriousness indicators. Confirm or override below.</span>
+    </div>
+  </div>` : "";
+
   return `<div class="step-h">Level of Concern</div>
-<div class="step-d">This step is different from extent. Extent says <strong>how much</strong> of the work seems affected. The indicators below say <strong>why the case may be more or less serious</strong>.</div>
-<div class="card"><div class="ct">Additional Seriousness Indicators (tick any that apply)</div>
-<div class="sgrid">
+<div class="step-d">Extent records <em>how much</em> of the work is affected. This step asks <em>why the case may be more or less serious</em> — intent, setting, prior record, and other factors that raise or lower concern.</div>
+
+<div class="card">
+  <div class="ct">Seriousness Indicators — tick any that apply</div>
+  <div class="sgrid">
 ${SEV.map(s=>`<div class="si${S.flags.includes(s.id)?" ck":""}" onclick="tog('${s.id}')">
   <div class="cb">${S.flags.includes(s.id)?"✓":""}</div>
   <span>${s.text}</span>
 </div>`).join("")}
+  </div>
+  <div class="hint" style="margin-top:13px">Extent and seriousness together inform the level. A small extent with poor academic practice may support Minor. A noticeable portion in a timed setting with clear intent would normally point to Moderate or Major.</div>
+  ${sugBadge}
 </div>
-<div class="hint" style="margin-top:12px">Examples: “Small part only” + “poor academic practice” may support a Minor plagiarism-related case. “Noticeable part” + “timed setting” + “clear intent” would usually point higher.</div>
-${sug?`<p style="margin-top:14px;font-size:15px;color:#4b5563">Suggested level based on offence family, extent, prior offences, and seriousness indicators: <strong style="color:${sug==="Major"?"var(--red)":sug==="Minor"?"var(--green)":"var(--amber)"}">${sug}</strong>. Confirm or override below.</p>`:""}
-</div>
-<div class="card"><div class="ct">Level of Concern ✱ — Select One</div>
-${isNPR?`<div class="warn" style="margin-bottom:12px">Non-plagiarism-related offences normally begin at <strong>Moderate</strong> or <strong>Major</strong>. A <strong>Minor</strong> classification should only be used in an exceptional Panel-agreed case, for example unintentional collusion.</div>`:""}
-<div class="lgrid">
+
+<div class="card">
+  <div class="ct">Level of Concern — select one</div>
+  ${isNPR?`<div class="warn" style="margin-bottom:14px">Non-plagiarism-related offences (${t.id}) normally begin at <strong>Moderate</strong> or <strong>Major</strong>. Minor is only appropriate in an exceptional Panel-agreed case — for example, clearly unintentional collusion.</div>`:""}
+  <div class="lgrid">
 ${[{v:"Minor",i:"🟢",h:"Limited extent, poor practice, lower concern"},
    {v:"Moderate",i:"🟡",h:"Significant breach, likely School penalty range"},
-   {v:"Major",i:"🔴",h:"Serious concern, referral / Faculty stage"}].map(({v,i,h})=>{
-     const disabled=(v==="Minor"&&minorDisabled);
-     return `<div class="lc ${v.toLowerCase()}${S.level===v?" sl-"+v.toLowerCase():""}${disabled?"" : ""}" style="${disabled?"opacity:.45;filter:grayscale(.1);cursor:not-allowed;":""}" onclick="${disabled?"void(0)":"S.level='"+v+"';render()"}">
+   {v:"Major",i:"🔴",h:"Serious concern, referral or Faculty stage"}].map(({v,i,h})=>{
+     const dis=(v==="Minor"&&minorDisabled);
+     return `<div class="lc ${v.toLowerCase()}${S.level===v?" sl-"+v.toLowerCase():""}" style="${dis?"opacity:.4;cursor:not-allowed;":""}" onclick="${dis?"void(0)":"S.level='"+v+"';render()"}">
   <div class="li">${i}</div><div class="ln">${v}</div><div class="lh">${h}</div>
 </div>`;
    }).join("")}
+  </div>
+  ${isNPR?`<label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:11px 14px;background:#f8fafc;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13.5px;color:var(--text-body)">
+    <input type="checkbox" style="margin-top:2px;flex-shrink:0" ${S.exceptionalNPR?"checked":""} onchange="S.exceptionalNPR=this.checked;if(!this.checked&&S.level==='Minor')S.level='';render()">
+    <span>Exceptional Panel-agreed NPR Minor case only (e.g. unintentional collusion). Selecting this requires a clear justification in the Reviewer Note below.</span>
+  </label>`:""}
+  ${nprMinorWarn?`<div class="warn" style="margin-top:10px">To select Minor for a non-plagiarism-related case, tick the exceptional-case checkbox above first.</div>`:""}
+  ${nprMinorRepeatWarn?`<div class="warn" style="margin-top:10px">NPR Minor is not a standard repeat pathway under Appendix 1. With a prior offence recorded, this case should normally be reconsidered under the NPR Moderate or Major route.</div>`:""}
+  ${referralWarn}
 </div>
-${isNPR?`<label style="display:flex;gap:10px;align-items:flex-start;margin-top:12px;color:var(--text-body);font-size:14px"><input type="checkbox" ${S.exceptionalNPR?"checked":""} onchange="S.exceptionalNPR=this.checked;if(!this.checked&&S.level==='Minor')S.level='';render()"> <span>Exceptional Panel-agreed NPR Minor case only (for example unintentional collusion). Selecting this requires a clear justification below.</span></label>`:""}
-${nprMinorWarn?`<div class="warn" style="margin-top:11px">⚠️ To select <strong>Minor</strong> for a non-plagiarism-related case, first tick the exceptional-case checkbox above.</div>`:""}
-${nprMinorRepeatWarn?`<div class="warn" style="margin-top:11px">⚠️ NPR Minor is not a standard repeat pathway under Appendix 1. Because a prior offence has been recorded, this case should normally be reconsidered under the standard NPR <strong>Moderate</strong> or <strong>Major</strong> route.</div>`:""}
-${referralWarn}
-</div>
-<div class="card"><div class="ct">Reviewer Note</div>
-<div class="f"><label>Why this level appears appropriate</label>
-<textarea rows="4" placeholder="e.g. Moderate selected because this is a first offence, but the assessment was controlled and evidence suggests deliberate unauthorised assistance.&#10;&#10;OR: Minor selected because only a short section is affected and the issue appears to reflect poor citation practice rather than intent to deceive." oninput="S.levelNote=this.value">${E(S.levelNote||"")}</textarea>
-${isNPR&&S.exceptionalNPR?`<div class="hint" style="margin-top:8px">Because this is an exceptional NPR Minor case, the justification should explain why the Panel would treat it as lower concern despite the normal Appendix 1 starting point of Moderate.</div>`:""}
-${isNPR&&S.exceptionalNPR&&S.prior!=="0"?`<div class="hint" style="margin-top:8px">A repeat NPR case should not normally remain on the NPR Minor path. Change the level unless there is a very unusual panel-agreed reason.</div>`:""}
-</div></div>`;
+
+<div class="card">
+  <div class="ct">Reviewer Note</div>
+  <div class="f">
+    <label style="margin-bottom:8px">Why this level appears appropriate</label>
+    <textarea rows="4" style="font-size:14px;line-height:1.65;" placeholder="e.g. Moderate selected — first offence, but the assessment was timed and evidence suggests deliberate unauthorised assistance.&#10;&#10;OR: Minor selected — only a short section appears affected and the issue looks like poor citation practice rather than intent to deceive." oninput="S.levelNote=this.value">${E(S.levelNote||"")}</textarea>
+    ${isNPR&&S.exceptionalNPR?`<div class="hint" style="margin-top:8px">For an exceptional NPR Minor case, explain why the Panel would treat this as lower concern despite Appendix 1 normally starting NPR at Moderate.</div>`:""}
+    ${isNPR&&S.exceptionalNPR&&S.prior!=="0"?`<div class="hint" style="margin-top:8px">A repeat NPR case should not normally remain at Minor. Change the level unless there is a clear Panel-agreed reason.</div>`:""}
+  </div>
+</div>`;
 }
 
-function s5(){
 
-  const r=decide();if(!r) return `<p style="color:var(--text-muted);padding:40px;text-align:center">Please complete all previous steps.</p>`;
+function s5(){
+  const r=decide();
+  if(!r) return `<div style="text-align:center;padding:48px 24px;color:var(--text-muted)">
+    <p style="font-size:15px;margin-bottom:8px">No decision available yet.</p>
+    <p style="font-size:13px">Please complete Steps 2–5 first, then return here.</p>
+  </div>`;
+
   const t=TYPES[S.tIdx];
   const panelFull=r.panel==="Faculty"?"Faculty Academic Misconduct Panel / Higher-Level Internal QAHE Review":"School Academic Misconduct Panel / Local QAHE Panel";
   const lvl=r.level.toLowerCase();
   const allM=[...r.actions.map(a=>"Action "+a),...r.pen.map(p=>"Penalty "+p)];
   const sumLine=r.referral
     ?`Referral to Faculty Panel — no penalty at this stage`
-    : r.panel==="Faculty"
-    ?`Faculty Panel stage — ${r.level} concern, penalty range C–F available after Faculty investigation`
+    :r.panel==="Faculty"
+    ?`Faculty Panel — ${r.level} concern, penalty range C–F after Faculty investigation`
     :allM.length?`${r.level} concern — ${allM.join(", ")}`:"No case to answer — case may be dismissed";
   const facWarn=r.referral
-    ?`<div class="warn">⚠️ Under Appendix 1, this outcome is a referral only. No penalty is imposed at this stage, and there is no right of appeal against the decision to refer.</div>`
+    ?`<div class="warn">Under Appendix 1, this is a referral only. No penalty is imposed at this stage and there is no right of appeal against the decision to refer.</div>`
     :r.panel==="Faculty"&&S.level==="Major"
-    ?`<div class="warn">⚠️ Major offences are considered by the Faculty Academic Misconduct Panel. The final penalty is determined only after Faculty investigation.</div>`
-    :""
-  ;
+    ?`<div class="warn">Major offences are considered by the Faculty Academic Misconduct Panel. The final penalty is determined only after Faculty investigation.</div>`
+    :"";
+
   const penChips=r.pen.map(p=>`<span class="chip ch-p">Penalty ${p}</span>`).join("");
   const actChips=r.actions.map(a=>`<span class="chip ch-a">Action ${a}</span>`).join("");
   const dismissChip=!r.actions.length&&!r.pen.length&&r.panel!=="Faculty"?`<span class="chip ch-d">No Penalty / Dismiss</span>`:"";
   const referChip=r.panel==="Faculty"?`<span class="chip ch-r">Refer to Faculty Panel</span>`:"";
-  const penList=r.pen.map(p=>`<li style="margin-bottom:7px"><strong>Penalty ${p}:</strong> ${P_DESC[p]}</li>`).join("");
-  const actList=r.actions.map(a=>`<li style="margin-bottom:7px"><strong>Action ${a}:</strong> ${A_DESC[a]}</li>`).join("");
+
+  const penList=r.pen.map(p=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:3px">Penalty ${p}</div>
+      <div style="font-size:13px;color:var(--text-body);line-height:1.6">${P_DESC[p]}</div>
+    </div>`).join("");
+  const actList=r.actions.map(a=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:3px">Action ${a}</div>
+      <div style="font-size:13px;color:var(--text-body);line-height:1.6">${A_DESC[a]}</div>
+    </div>`).join("");
+
   return `
 <div class="rbanner rb-${lvl}">
-  <div><div class="rbl">Decision Outcome</div><div class="rbs">${sumLine}</div></div>
+  <div>
+    <div class="rbl">Decision Outcome</div>
+    <div class="rbs">${sumLine}</div>
+  </div>
   <div class="pills">
     <span class="pill p-${lvl}">${r.level} Concern</span>
     <span class="pill p-code">${r.code}</span>
   </div>
 </div>
 ${facWarn}
-<div class="card" style="margin-bottom:14px">
-  <div class="ct">Case Record</div>
-  <p style="color:var(--text-body);margin-bottom:12px">Use JSON as the master case file. The same JSON can reopen this case later and can also be passed to the Python DOCX generator.</p>
-  <div class="crow">
-    <button class="btn btn-outline" onclick="saveCaseJson()">💾 Save Case JSON</button>
-    <button class="btn btn-ghost" onclick="loadCaseJsonClick()">📂 Load Case JSON</button>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px;align-items:start">
+
+  <!-- LEFT: decision detail -->
+  <div style="display:flex;flex-direction:column;gap:0">
+    <div class="rc" style="margin-bottom:10px">
+      <div class="rct">Handling Panel</div>
+      <div style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:7px">${panelFull}</div>
+      <div class="rtxt">${r.note}</div>
+    </div>
+    <div class="rc" style="margin-bottom:10px">
+      <div class="rct">Actions &amp; Penalties</div>
+      <div style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:6px">${actChips}${penChips}${dismissChip}${referChip}${r.exceptional?`<span class="chip ch-r">Exceptional NPR Minor only</span>`:""}</div>
+      ${actList||penList?`<div>${actList}${penList}</div>`:""}
+    </div>
+    <div class="rc" style="margin-bottom:0">
+      <div class="rct">Next Steps for Staff</div>
+      <div style="display:flex;flex-direction:column;gap:0">
+        ${[
+          "Ensure the evidence pack is complete and clearly documented.",
+          "Contact the student in writing and give them the opportunity to respond.",
+          "Hold the meeting, hear the student's account, and retain a written record.",
+          r.panel==="Faculty"
+            ?"Escalate to the higher-level QAHE review / Faculty-stage equivalent after the local meeting."
+            :"Conclude through the local QAHE panel route, subject to internal sign-off.",
+          "Complete the register form and save the email trail.",
+        ].map((step,i)=>`
+        <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--blue-light);color:var(--blue);font-size:11px;font-weight:800;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${i+1}</div>
+          <div style="font-size:13px;color:var(--text-body);line-height:1.55;padding-top:2px">${step}</div>
+        </div>`).join("")}
+      </div>
+    </div>
   </div>
-  <div class="hint" style="margin-top:10px">Suggested workflow: save JSON → review or amend later → generate DOCX from the JSON record → save a PDF snapshot for filing.</div>
+
+  <!-- RIGHT: register + case record -->
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="rc" style="margin-bottom:0">
+      <div class="rct">Register Details</div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        ${[
+          ["Type", t.id],
+          ["Family", t.fam==="PR"?"Plagiarism-Related":"Non-Plagiarism-Related"],
+          ["Level", r.level],
+          ["Offence #", r.total+" (incl. this one)"],
+        ].map(([k,v])=>`
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text-dim)">${k}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--text)">${v}</span>
+        </div>`).join("")}
+        <div style="padding:12px 0 4px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text-dim);margin-bottom:6px">Register Code</div>
+          <div style="font-family:'Courier New',monospace;font-size:24px;font-weight:700;color:var(--navy);letter-spacing:2px">${r.code}</div>
+        </div>
+      </div>
+    </div>
+    <div class="rc" style="margin-bottom:0">
+      <div class="rct">Evidence on Record</div>
+      <div style="font-size:12.5px;color:var(--text-body);line-height:1.6">
+        <div style="margin-bottom:5px"><strong>Assessment:</strong> ${S.assessType||"Not recorded"}</div>
+        <div style="margin-bottom:5px"><strong>Setting:</strong> ${S.setting||"Not recorded"}</div>
+        <div style="margin-bottom:5px"><strong>Extent:</strong> ${S.extent||"Not recorded"}</div>
+        <div><strong>Evidence:</strong> ${(S.evidence.map(id=>EVIDENCE.find(x=>x.id===id)?.text).filter(Boolean).join("; "))||"None selected"}</div>
+      </div>
+    </div>
+    <div class="rc" style="margin-bottom:0">
+      <div class="rct">Case Record</div>
+      <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:11px;line-height:1.5">Save the case as JSON to reopen later or pass to the Python DOCX generator.</p>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button class="btn btn-outline" onclick="saveCaseJson()" style="width:100%;justify-content:center">Save Case JSON</button>
+        <button class="btn btn-ghost" onclick="loadCaseJsonClick()" style="width:100%;justify-content:center">Load Case JSON</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px">
+      <button class="btn btn-primary" onclick="newCase()" style="flex:1;justify-content:center">+ New Case</button>
+      <button class="btn btn-ghost" onclick="S.step=4;render()" style="justify-content:center">← Edit</button>
+    </div>
+  </div>
+
 </div>
+
+<div class="disc" style="margin-bottom:16px">This tool applies the Ulster University Penalty and Actions Framework (Appendix 1, Student Academic Misconduct Procedure 2025) directly from policy. All outcomes must be formally confirmed by the appropriate Panel. Academic judgement applies throughout.</div>
+
 <div class="tabs">
-  <button class="tab${S.tab==='contact'?' act':''}" onclick="S.tab='contact';render()">📨 Initial Student Contact</button>
-  <button class="tab${S.tab==='decision'?' act':''}" onclick="S.tab='decision';render()">📋 Decision</button>
-  <button class="tab${S.tab==='panelshort'?' act':''}" onclick="S.tab='panelshort';render()">🧾 Panel Summary (Short)</button>
-  <button class="tab${S.tab==='panelfull'?' act':''}" onclick="S.tab='panelfull';render()">📄 Panel Summary (Full)</button>
-  <button class="tab${S.tab==='panelpack'?' act':''}" onclick="S.tab='panelpack';render()">🗂️ Panel Pack</button>
-  <button class="tab${S.tab==='summary'?' act':''}" onclick="S.tab='summary';render()">🧾 Case Summary</button>
-  <button class="tab${S.tab==='form'?' act':''}" onclick="S.tab='form';render()">📄 Register Form</button>
-  <button class="tab${S.tab==='email'?' act':''}" onclick="S.tab='email';render()">✉️ Outcome / Referral Draft</button>
+  <button class="tab${S.tab==='contact'?' act':''}" onclick="S.tab='contact';render()">Initial Contact</button>
+  <button class="tab${S.tab==='decision'?' act':''}" onclick="S.tab='decision';render()">Decision Detail</button>
+  <button class="tab${S.tab==='panelshort'?' act':''}" onclick="S.tab='panelshort';render()">Panel Summary (Short)</button>
+  <button class="tab${S.tab==='panelfull'?' act':''}" onclick="S.tab='panelfull';render()">Panel Summary (Full)</button>
+  <button class="tab${S.tab==='panelpack'?' act':''}" onclick="S.tab='panelpack';render()">Panel Pack</button>
+  <button class="tab${S.tab==='summary'?' act':''}" onclick="S.tab='summary';render()">Case Summary</button>
+  <button class="tab${S.tab==='form'?' act':''}" onclick="S.tab='form';render()">Register Form</button>
+  <button class="tab${S.tab==='email'?' act':''}" onclick="S.tab='email';render()">Outcome Draft</button>
 </div>
 
 ${S.tab==="decision"?`
-<div class="rc"><div class="rct">Handling Panel</div>
-  <p style="color:var(--blue);font-weight:700;font-size:15px;margin-bottom:7px">${panelFull}</p>
-  <p class="rtxt">${r.note}</p>
+<div class="rc"><div class="rct">Full Handling Panel Note</div>
+  <div style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:7px">${panelFull}</div>
+  <div class="rtxt">${r.note}</div>
 </div>
-<div class="rc"><div class="rct">Recommended Actions &amp; Penalties</div>
-  <div style="margin-bottom:12px">${actChips}${penChips}${dismissChip}${referChip}${r.exceptional?`<span class="chip ch-r">Exceptional NPR Minor only</span>`:""}</div>
-  ${actList||penList?`<ul style="list-style:none;padding:0">${actList}${penList}</ul>`:""}
-</div>
-<div class="rc"><div class="rct">Recommended Next Steps for Staff</div>
-  <ul style="padding-left:18px;line-height:1.65;color:var(--text-body)">
-    <li>Record the concern clearly and keep the evidence pack together.</li>
-    <li>Contact the student and give them an opportunity to respond.</li>
-    <li>Hold or arrange the internal QAHE meeting/panel and retain a written record.</li>
-    <li>${r.panel==="Faculty"?"Escalate internally to the higher-level QAHE review / Faculty-stage equivalent after the initial local review.":"Conclude through the local QAHE panel route if approved by the internal decision makers."}</li>
-    <li>Complete the register-style form and keep the email trail.</li>
-  </ul>
-</div>
-<div class="rc"><div class="rct">Evidence Snapshot</div>
-  <div class="srow"><span class="sk">Assessment</span><span class="sv">${S.assessType||"Not recorded"}</span></div>
-  <div class="srow"><span class="sk">Setting</span><span class="sv">${S.setting||"Not recorded"}</span></div>
-  <div class="srow"><span class="sk">Extent</span><span class="sv">${S.extent||"Not recorded"}</span></div>
-  <div class="srow"><span class="sk">Evidence</span><span class="sv">${(S.evidence.map(id=>EVIDENCE.find(x=>x.id===id)?.text).filter(Boolean).join("; "))||"None selected"}</span></div>
-</div>
-<div class="rc"><div class="rct">Register Details</div>
-  <div class="srow"><span class="sk">Offence Type</span><span class="sv">${t.id}</span></div>
-  <div class="srow"><span class="sk">Family</span><span class="sv">${t.fam==="PR"?"Plagiarism-Related":"Non-Plagiarism-Related"}</span></div>
-  <div class="srow"><span class="sk">Level</span><span class="sv">${r.level}</span></div>
-  <div class="srow"><span class="sk">Total Offence #</span><span class="sv">${r.total} (including this one)</span></div>
-  <div class="srow"><span class="sk">Register Code</span><span class="sv" style="font-family:'Source Code Pro',monospace;color:var(--navy);font-size:16px;font-weight:700;letter-spacing:1px">${r.code}</span></div>
-</div>
-<div class="disc">⚠️ This tool applies the Ulster University Penalty and Actions Framework (Appendix 1, Student Academic Misconduct Procedure 2025) directly from policy. All outcomes must be formally confirmed by the appropriate Panel. Academic judgement applies throughout.</div>
-<div style="margin-top:13px;display:flex;gap:8px;flex-wrap:wrap">
-  <button class="btn btn-primary" onclick="newCase()">+ New Case</button>
-  <button class="btn btn-ghost" onclick="S.step=4;render()">← Edit Level</button>
+<div class="rc"><div class="rct">Actions &amp; Penalties — Full Detail</div>
+  <div style="margin-bottom:14px">${actChips}${penChips}${dismissChip}${referChip}</div>
+  ${actList||penList?`<div>${actList}${penList}</div>`:""}
 </div>
 `:""}
-
 
 ${S.tab==="summary"?`
 <pre class="doc">${E(genCaseSummary())}</pre>
 <div class="crow">
-  <button class="btn btn-outline" onclick="doCopy('summary')">${S.copied==='summary'?'✓ Copied!':'📋 Copy to Clipboard'}</button>
-  
-  <button class="btn btn-ghost" onclick="exportPdf()">🖨 Export / Save PDF</button>
+  <button class="btn btn-outline" onclick="doCopy('summary')">${S.copied==='summary'?'✓ Copied!':'Copy to Clipboard'}</button>
+  <button class="btn btn-ghost" onclick="exportPdf()">Print / Save PDF</button>
 </div>`:""}
 
 ${S.tab==="form"?`
 <pre class="doc">${E(genForm())}</pre>
 <div class="crow">
-  <button class="btn btn-outline" onclick="doCopy('form')">${S.copied==="form"?"✓ Copied!":"📋 Copy to Clipboard"}</button>
-  
-  <button class="btn btn-ghost" onclick="exportPdf()">🖨 Export / Save PDF</button>
+  <button class="btn btn-outline" onclick="doCopy('form')">${S.copied==="form"?"✓ Copied!":"Copy to Clipboard"}</button>
+  <button class="btn btn-ghost" onclick="exportPdf()">Print / Save PDF</button>
 </div>`:""}
 
 ${S.tab==="contact"?`
 <pre class="doc">${E(genInitialContactEmail())}</pre>
 <div class="crow">
-  <button class="btn btn-outline" onclick="copyTxt(genInitialContactEmail(),'contact')">${S.copied==='contact'?'✓ Copied!':'📋 Copy to Clipboard'}</button>
-  
-  <button class="btn btn-ghost" onclick="exportPdf()">🖨 Export / Save PDF</button>
+  <button class="btn btn-outline" onclick="copyTxt(genInitialContactEmail(),'contact')">${S.copied==='contact'?'✓ Copied!':'Copy to Clipboard'}</button>
+  <button class="btn btn-ghost" onclick="exportPdf()">Print / Save PDF</button>
 </div>`:""}
 
 ${S.tab==="email"?`
 <pre class="doc">${E(genEmail())}</pre>
 <div class="crow">
-  <button class="btn btn-outline" onclick="doCopy('email')">${S.copied==="email"?"✓ Copied!":"📋 Copy to Clipboard"}</button>
-  
-  <button class="btn btn-ghost" onclick="exportPdf()">🖨 Export / Save PDF</button>
+  <button class="btn btn-outline" onclick="doCopy('email')">${S.copied==="email"?"✓ Copied!":"Copy to Clipboard"}</button>
+  <button class="btn btn-ghost" onclick="exportPdf()">Print / Save PDF</button>
+</div>`:""}
+
+${S.tab==="panelshort"?`
+<pre class="doc">${E(genPanelSummaryShort())}</pre>
+<div class="crow">
+  <button class="btn btn-outline" onclick="copyTxt(genPanelSummaryShort(),'panelshort')">${S.copied==="panelshort"?"✓ Copied!":"Copy to Clipboard"}</button>
+  <button class="btn btn-ghost" onclick="printPanelSummary('short')">Print / Save PDF</button>
+</div>`:""}
+
+${S.tab==="panelfull"?`
+<pre class="doc">${E(genPanelSummaryFull())}</pre>
+<div class="crow">
+  <button class="btn btn-outline" onclick="copyTxt(genPanelSummaryFull(),'panelfull')">${S.copied==="panelfull"?"✓ Copied!":"Copy to Clipboard"}</button>
+  <button class="btn btn-ghost" onclick="printPanelSummary('full')">Print / Save PDF</button>
+</div>`:""}
+
+${S.tab==="panelpack"?`
+<pre class="doc">${E(genPanelPack())}</pre>
+<div class="crow">
+  <button class="btn btn-outline" onclick="copyTxt(genPanelPack(),'panelpack')">${S.copied==="panelpack"?"✓ Copied!":"Copy to Clipboard"}</button>
+  <button class="btn btn-ghost" onclick="printPanelPack()">Print / Save PDF</button>
 </div>`:""}`;
 }
+
 
 // ════════════════ HELPERS ════════════════
 function tog(id){S.flags=S.flags.includes(id)?S.flags.filter(x=>x!==id):[...S.flags,id];render();}
@@ -1563,13 +1893,13 @@ function render(){
 </div>`).join("");
 
   let html="";
+  if(S.step===5 && S.tab==="guidance") S.tab="contact";
   if(S.step===0)html=s0();
   else if(S.step===1)html=s1();
   else if(S.step===2)html=s2();
   else if(S.step===3)html=s3();
   else if(S.step===4)html=s4();
   else html=s5();
-  if(S.step===5 && S.tab==="guidance") S.tab="contact";
   document.getElementById("app").innerHTML=html;
 
   const bb=document.getElementById("bBack");
