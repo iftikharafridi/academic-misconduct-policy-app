@@ -486,6 +486,8 @@ pre.doc{
 </div>
 
 <input type="file" id="jsonLoader" accept=".json,application/json" style="display:none" onchange="importCaseJson(event)">
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <script>
 // ════════════════════════════════════════════════════
 // POLICY ENGINE — Appendix 1, UU Misconduct Procedure 2025
@@ -1229,12 +1231,13 @@ function s0(){
 
     <div class="card">
       <div class="ct">Case Record Tools</div>
-      <p style="font-size:13px;color:var(--text-body);margin-bottom:12px;line-height:1.55">Save the current case as a JSON record to reopen later or pass to the Python DOCX generator.</p>
+      <p style="font-size:13px;color:var(--text-body);margin-bottom:12px;line-height:1.55">Save the current case as a JSON record, reopen it later, or download a browser-generated DOCX file.</p>
       <div class="crow">
         <button class="btn btn-outline" onclick="saveCaseJson()">💾 Save Case JSON</button>
         <button class="btn btn-ghost" onclick="loadCaseJsonClick()">📂 Load Case JSON</button>
+        <button class="btn btn-primary" onclick="exportDocx()" title="Creates a DOCX in the browser using JavaScript.">⬇️ Download DOCX</button>
       </div>
-      <div class="hint" style="margin-top:10px">Workflow: save JSON → review or amend → generate DOCX → save a PDF snapshot for filing.</div>
+      <div class="hint" style="margin-top:10px">Workflow: review the case → save JSON if needed → download DOCX → save a PDF snapshot for filing.</div>
     </div>
 
     ${suggestedRoute ? `<div class="disc" style="padding:14px 16px;">
@@ -1584,10 +1587,11 @@ ${facWarn}
     </div>
     <div class="rc" style="margin-bottom:0">
       <div class="rct">Case Record</div>
-      <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:11px;line-height:1.5">Save the case as JSON to reopen later or pass to the Python DOCX generator.</p>
+      <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:11px;line-height:1.5">Save the case as JSON to reopen later, or download a DOCX directly in the browser.</p>
       <div style="display:flex;flex-direction:column;gap:7px">
         <button class="btn btn-outline" onclick="saveCaseJson()" style="width:100%;justify-content:center">Save Case JSON</button>
         <button class="btn btn-ghost" onclick="loadCaseJsonClick()" style="width:100%;justify-content:center">Load Case JSON</button>
+        <button class="btn btn-primary" onclick="exportDocx()" style="width:100%;justify-content:center" title="Creates a DOCX in the browser using JavaScript.">Download DOCX</button>
       </div>
     </div>
     <div style="display:flex;gap:7px">
@@ -1627,6 +1631,10 @@ ${S.tab==="summary"?`
 <div class="crow">
   <button class="btn btn-outline" onclick="doCopy('summary')">${S.copied==='summary'?'✓ Copied!':'Copy to Clipboard'}</button>
   <button class="btn btn-ghost" onclick="exportPdf()">Print / Save PDF</button>
+  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
+  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
+  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
+  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
 </div>`:""}
 
 ${S.tab==="form"?`
@@ -1655,6 +1663,7 @@ ${S.tab==="panelshort"?`
 <div class="crow">
   <button class="btn btn-outline" onclick="copyTxt(genPanelSummaryShort(),'panelshort')">${S.copied==="panelshort"?"✓ Copied!":"Copy to Clipboard"}</button>
   <button class="btn btn-ghost" onclick="printPanelSummary('short')">Print / Save PDF</button>
+  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
 </div>`:""}
 
 ${S.tab==="panelfull"?`
@@ -1662,6 +1671,7 @@ ${S.tab==="panelfull"?`
 <div class="crow">
   <button class="btn btn-outline" onclick="copyTxt(genPanelSummaryFull(),'panelfull')">${S.copied==="panelfull"?"✓ Copied!":"Copy to Clipboard"}</button>
   <button class="btn btn-ghost" onclick="printPanelSummary('full')">Print / Save PDF</button>
+  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
 </div>`:""}
 
 ${S.tab==="panelpack"?`
@@ -1669,6 +1679,7 @@ ${S.tab==="panelpack"?`
 <div class="crow">
   <button class="btn btn-outline" onclick="copyTxt(genPanelPack(),'panelpack')">${S.copied==="panelpack"?"✓ Copied!":"Copy to Clipboard"}</button>
   <button class="btn btn-ghost" onclick="printPanelPack()">Print / Save PDF</button>
+  <button class="btn btn-primary" onclick="exportDocx()">Download DOCX</button>
 </div>`:""}`;
 }
 
@@ -1866,6 +1877,152 @@ function importCaseJson(event){
 
 function exportPdf(){
   window.print();
+}
+
+function safeDocxText(value, fallback="Not recorded"){
+  const txt = String(value == null ? "" : value).trim();
+  return txt || fallback;
+}
+function safeFilePart(value, fallback){
+  return String(value || fallback || "file").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase() || fallback || "file";
+}
+function docxBullets(items){
+  const d = window.docx;
+  return (items || []).map(item => new d.Paragraph({
+    text: safeDocxText(item, "Not recorded"),
+    bullet: { level: 0 },
+    spacing: { after: 80 }
+  }));
+}
+function docxLinesBlock(text){
+  const d = window.docx;
+  return String(text || "").split(/\r?\n/).map(line => new d.Paragraph({
+    text: line || " ",
+    spacing: { after: 80 }
+  }));
+}
+function docxKVTable(rows){
+  const d = window.docx;
+  return new d.Table({
+    width: { size: 100, type: d.WidthType.PERCENTAGE },
+    rows: rows.map(([label, value]) => new d.TableRow({
+      children: [
+        new d.TableCell({
+          width: { size: 32, type: d.WidthType.PERCENTAGE },
+          shading: { fill: "EEF3F9" },
+          children: [new d.Paragraph({
+            children: [new d.TextRun({ text: String(label || ""), bold: true })]
+          })]
+        }),
+        new d.TableCell({
+          width: { size: 68, type: d.WidthType.PERCENTAGE },
+          children: docxLinesBlock(safeDocxText(value))
+        })
+      ]
+    }))
+  });
+}
+async function exportDocx(){
+  if(!window.docx || !window.saveAs){
+    alert("DOCX library not loaded. If you are using GitHub Pages, check that the JavaScript library files are reachable.");
+    return;
+  }
+  const d = window.docx;
+  const rec = buildCaseRecord();
+  const decision = decide();
+  const evidenceList = (rec.evidence_items && rec.evidence_items.length) ? rec.evidence_items : ["No evidence items selected"];
+  const actionsList = (rec.recommended_actions && rec.recommended_actions.length) ? rec.recommended_actions : ["None"];
+  const penaltiesList = (rec.recommended_penalties && rec.recommended_penalties.length) ? rec.recommended_penalties : ["None"];
+  const sectionChildren = [
+    new d.Paragraph({
+      text: "Academic Misconduct Case Record",
+      heading: d.HeadingLevel.TITLE,
+      spacing: { after: 180 }
+    }),
+    new d.Paragraph({
+      text: "Ulster University / QAHE — browser-generated case pack",
+      spacing: { after: 260 }
+    }),
+
+    new d.Paragraph({ text: "1. Core Case Details", heading: d.HeadingLevel.HEADING_1, spacing: { before: 160, after: 140 } }),
+    docxKVTable([
+      ["Student name", rec.student_name],
+      ["Student number", rec.student_number],
+      ["Programme", rec.programme],
+      ["Year of study", rec.year_of_study],
+      ["Level", rec.level],
+      ["Module code", rec.module_code],
+      ["Module title", rec.module_title],
+      ["QAHE module leader", rec.qahe_module_leader],
+      ["Assessment item", rec.assessment_item],
+      ["Assessment type", rec.assessment_type],
+      ["Assessment setting", rec.assessment_setting],
+      ["Date submitted", rec.date_submitted]
+    ]),
+
+    new d.Paragraph({ text: "2. Misconduct Classification", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
+    docxKVTable([
+      ["Misconduct type", rec.misconduct_type],
+      ["Offence family", rec.offence_family],
+      ["Level of concern", rec.level_of_concern],
+      ["Prior offences", String(rec.prior_offences)],
+      ["Offence count label", rec.offence_count_label],
+      ["Exceptional NPR minor", rec.exceptional_npr_minor ? "Yes" : "No"],
+      ["Panel type", rec.panel_type],
+      ["Register code", rec.register_code]
+    ]),
+
+    new d.Paragraph({ text: "3. Evidence and Narrative", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
+    new d.Paragraph({ text: "Evidence items", heading: d.HeadingLevel.HEADING_2 }),
+    ...docxBullets(evidenceList),
+    new d.Paragraph({ text: "Extent affected", heading: d.HeadingLevel.HEADING_2, spacing: { before: 100 } }),
+    ...docxLinesBlock(rec.extent_affected),
+    new d.Paragraph({ text: "Summary of concern", heading: d.HeadingLevel.HEADING_2, spacing: { before: 100 } }),
+    ...docxLinesBlock(rec.summary_of_concern),
+    new d.Paragraph({ text: "Narrative and rationale", heading: d.HeadingLevel.HEADING_2, spacing: { before: 100 } }),
+    ...docxLinesBlock(rec.narrative_and_rationale),
+
+    new d.Paragraph({ text: "4. Recommended Outcome", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
+    docxKVTable([
+      ["Handling panel", decision ? decision.panel : ""],
+      ["Decision note", decision ? decision.note : ""],
+      ["Referral only", rec.referral_only ? "Yes" : "No"]
+    ]),
+    new d.Paragraph({ text: "Recommended actions", heading: d.HeadingLevel.HEADING_2, spacing: { before: 120 } }),
+    ...docxBullets(actionsList),
+    new d.Paragraph({ text: "Recommended penalties", heading: d.HeadingLevel.HEADING_2, spacing: { before: 100 } }),
+    ...docxBullets(penaltiesList),
+
+    new d.Paragraph({ text: "5. Register Form Draft", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
+    ...docxLinesBlock(genForm()),
+
+    new d.Paragraph({ text: "6. Case Summary", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
+    ...docxLinesBlock(genCaseSummary()),
+
+    new d.Paragraph({ text: "7. Initial Contact Email Draft", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
+    ...docxLinesBlock(genInitialContactEmail()),
+
+    new d.Paragraph({ text: "8. Outcome Email Draft", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
+    ...docxLinesBlock(genEmail()),
+
+    new d.Paragraph({ text: "9. Panel Summaries", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
+    new d.Paragraph({ text: "Short summary", heading: d.HeadingLevel.HEADING_2 }),
+    ...docxLinesBlock(genPanelSummaryShort()),
+    new d.Paragraph({ text: "Full summary", heading: d.HeadingLevel.HEADING_2, spacing: { before: 120 } }),
+    ...docxLinesBlock(genPanelSummaryFull()),
+    new d.Paragraph({ text: "Panel pack", heading: d.HeadingLevel.HEADING_2, spacing: { before: 120 } }),
+    ...docxLinesBlock(genPanelPack())
+  ];
+  const doc = new d.Document({
+    creator: "Academic Misconduct Decision Support Tool",
+    title: "Academic Misconduct Case Record",
+    description: "Browser-generated DOCX case record",
+    sections: [{ properties: {}, children: sectionChildren }]
+  });
+  const blob = await d.Packer.toBlob(doc);
+  const student = safeFilePart(rec.student_number || rec.student_name, "case");
+  const modulePart = safeFilePart(rec.module_code || rec.module_title, "module");
+  saveAs(blob, `misconduct-case-${student}-${modulePart}.docx`);
 }
 function newCase(){
   Object.assign(S,{step:0,sName:"",sNum:"",prog:"",yr:"",ugpg:"UG",mName:"",mCode:"",coord:"",dSub:"",tIdx:-1,prior:"0",assessItem:"",assessType:"",setting:"coursework",extent:"",evidence:[],level:"",levelNote:"",flags:[],ctx:"",exceptionalNPR:false,tab:"contact",copied:""});
