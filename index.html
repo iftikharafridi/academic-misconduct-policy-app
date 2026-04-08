@@ -198,14 +198,16 @@ header{
 .tc:hover{border-color:var(--border-med);box-shadow:var(--shadow-sm);background:#fff;}
 .tc.sel{border-color:var(--blue);background:var(--blue-xlight);box-shadow:0 0 0 1px var(--blue);}
 .rr{
-  width:16px;height:16px;border-radius:50%;
+  width:16px;height:16px;border-radius:4px;
   border:2px solid var(--border-med);
   flex-shrink:0;margin-top:2px;
   transition:all .15s;
   display:flex;align-items:center;justify-content:center;
+  color:transparent;font-size:11px;font-weight:800;
 }
 .tc.sel .rr{border-color:var(--blue);background:var(--blue);}
-.rd{width:5px;height:5px;border-radius:50%;background:#fff;opacity:0;transition:opacity .15s;}
+.rd{width:auto;height:auto;border-radius:0;background:transparent;opacity:0;transition:opacity .15s;color:#fff;}
+.rd::before{content:"\2713";}
 .tc.sel .rd{opacity:1;}
 .tlbl{font-weight:700;font-size:13.5px;margin-bottom:3px;color:var(--navy);}
 .tdsc{font-size:11.5px;color:var(--text-muted);line-height:1.45;margin-bottom:6px;}
@@ -625,8 +627,8 @@ const S={
   step:0,
   sName:"",sNum:"",prog:"",yr:"",ugpg:"UG",
   mName:"",mCode:"",coord:"",dSub:"",
-  tIdx:-1,prior:"0",
-  assessItem:"",assessType:"",setting:"coursework",extent:"",evidence:[],
+  tIdx:-1,tIdxs:[],prior:"0",
+  assessItem:"",assessType:"",setting:"coursework",extent:"",currentMark:"",remainingMark:"",passMark:"40",finalPenalty:"",evidence:[],
   level:"",levelNote:"",flags:[],ctx:"",
   exceptionalNPR:false,
   tab:"contact",copied:"",
@@ -634,24 +636,26 @@ const S={
 
 // ════════════════ ENGINE ════════════════
 function decide(){
-  if(S.tIdx<0||!S.level) return null;
-  const t=TYPES[S.tIdx];
+  const t=governingTypeObj();
+  if(!t||!S.level) return null;
   if(t.fam==="NPR" && S.level==="Minor" && !S.exceptionalNPR) return null;
   const p=S.prior==="3+"?3:parseInt(S.prior);
   if(t.fam==="NPR" && S.level==="Minor" && p>0) return null;
   const rule=RULES[t.fam][S.level][p]||RULES[t.fam][S.level][3];
   const total=p+1;
   const code=(REG_CODES[t.id]||"XX")+Math.min(total,4);
-  return{...rule,code,total,tname:t.id,fam:t.fam,level:S.level,p,referral:!!rule.referral,exceptional:!!rule.exceptional};
+  const codes=selectedTypes().map(type => (REG_CODES[type.id]||"XX")+Math.min(total,4));
+  return{...rule,code,total,codes,tname:t.id,fam:t.fam,level:S.level,p,referral:!!rule.referral,exceptional:!!rule.exceptional};
 }
 
 function suggestLevel(){
-  if(S.tIdx<0) return "";
-  const t=TYPES[S.tIdx];
+  const t=governingTypeObj();
+  if(!t) return "";
   const prior=S.prior==="3+"?3:parseInt(S.prior||"0",10);
   const h=id=>S.flags.includes(id);
   const isPR=t.fam==="PR";
   const isNPR=t.fam==="NPR";
+  const selectedNames=selectedTypes().map(x=>x.id);
   const small=S.extent==="under20" || h("lo_ext");
   const medium=S.extent==="20to50";
   const large=S.extent==="over50" || S.extent==="whole" || h("hi_ext");
@@ -666,7 +670,7 @@ function suggestLevel(){
   // should be treated below this, and the app does not suggest that automatically.
   if(isNPR){
     if(group || intent || prior>=2) return "Major";
-    if(["Cheating","Impersonation","Contract Cheating","Fabrication / Falsification"].includes(t.id)){
+    if(selectedNames.some(name => ["Cheating","Impersonation","Contract Cheating","Fabrication / Falsification"].includes(name))){
       if(timed || large || prior>=1) return "Major";
       return "Moderate";
     }
@@ -716,8 +720,18 @@ function panelPenaltyText(d){
   if(d.referral) return "Referral only at this stage. No School-stage penalty is imposed.";
   const bits = [];
   if((d.actions||[]).length) bits.push("Actions " + d.actions.join(", "));
-  if((d.pen||[]).length) bits.push("Penalties " + d.pen.join(", "));
+  if((d.pen||[]).length) bits.push(penaltyOptionText(d));
   return bits.length ? bits.join("; ") : "No action or penalty selected.";
+}
+function penaltyOptionText(d){
+  if(!d || !(d.pen||[]).length) return "No penalty";
+  if(d.panel==="Faculty" && d.level==="Major") return "Faculty penalty options " + d.pen.join("-") + " (one or a combination may be applied by the Faculty Panel)";
+  if(d.pen.length===1) return "Penalty " + d.pen[0];
+  return "Available penalty options " + d.pen.map(p=>"Penalty "+p).join(" or ") + " (select one final penalty)";
+}
+function registerCodeHelp(d){
+  const codes = d && d.codes && d.codes.length ? d.codes.join(", ") : d && d.code ? d.code : "";
+  return "Register code means the University Academic Misconduct Register category for the offence type and offence count, for example AI1 means AI Use, first offence. It is an administrative recording code, not an extra penalty.";
 }
 function extentLabel(){
   if(S.extent==="under20") return "Up to about 20%";
@@ -725,6 +739,93 @@ function extentLabel(){
   if(S.extent==="over50") return "About 50% or more";
   if(S.extent==="whole") return "Whole or almost whole assessment";
   return "[Not selected]";
+}
+function markNum(v){
+  const n = parseFloat(String(v||"").replace("%","").trim());
+  return Number.isFinite(n) ? n : null;
+}
+function fmtMark(v){
+  const n = markNum(v);
+  if(n===null) return "";
+  return (Math.round(n * 100) / 100).toString() + "%";
+}
+function finalPenaltyForCalc(d){
+  if(!d || !(d.pen||[]).length) return "";
+  if(S.finalPenalty && d.pen.includes(S.finalPenalty)) return S.finalPenalty;
+  return d.pen.length===1 ? d.pen[0] : "";
+}
+function suggestedPenaltyForEstimate(d){
+  if(!d || d.referral || (d.panel==="Faculty" && d.level==="Major") || !(d.pen||[]).length) return "";
+  if(d.pen.length===1) return d.pen[0];
+  const has = id => S.flags.includes(id);
+  const serious = has("intent") || has("timed") || has("group") || has("hi_ext") || S.extent==="over50" || S.extent==="whole";
+  const moderateOrMore = serious || S.extent==="20to50";
+  const pens = d.pen.join("");
+  if(pens==="CD") return moderateOrMore ? "D" : "C";
+  if(pens==="DE") return serious ? "E" : "D";
+  return "";
+}
+function computedPenaltyMark(penalty){
+  const remaining = markNum(S.remainingMark);
+  const pass = markNum(S.passMark) ?? 40;
+  if(penalty==="C") return remaining!==null ? fmtMark(remaining) : "";
+  if(penalty==="D") return remaining!==null ? fmtMark(Math.min(remaining, pass)) : "";
+  if(penalty==="E") return "0%";
+  return "";
+}
+function revisedMarkRows(d){
+  const rows = [];
+  const current = markNum(S.currentMark);
+  const remaining = markNum(S.remainingMark);
+  const pass = markNum(S.passMark) ?? 40;
+  const finalPenalty = finalPenaltyForCalc(d);
+  const suggestedPenalty = suggestedPenaltyForEstimate(d);
+  if(current!==null) rows.push(["Original / provisional component mark", fmtMark(current)]);
+  if(remaining!==null) rows.push(["Marker's mark after removing misconduct material", fmtMark(remaining)]);
+  rows.push(["Component pass mark used for cap", fmtMark(pass)]);
+  if(!d){
+    rows.push(["Revised mark guidance", "Complete the level of concern before using the mark guide."]);
+    return rows;
+  }
+  if(d.referral || (d.panel==="Faculty" && d.level==="Major")){
+    rows.push(["Revised mark guidance", "Not calculated at this stage. The Faculty-stage panel determines the final penalty after investigation."]);
+    return rows;
+  }
+  if(!(d.pen||[]).length){
+    rows.push(["Revised mark guidance", "No mark penalty in the current outcome range. Keep the normal awarded mark unless the Panel applies a penalty."]);
+    return rows;
+  }
+  if(finalPenalty){
+    const computed = computedPenaltyMark(finalPenalty);
+    if(computed){
+      rows.push(["Computed revised component mark", computed + " using Penalty " + finalPenalty + "."]);
+    } else if(finalPenalty==="F"){
+      rows.push(["Computed revised component mark", "Not applicable. Penalty F is a recommendation for suspension or expulsion, not an automatic component-mark calculation."]);
+    }
+  } else if(suggestedPenalty){
+    const estimated = computedPenaltyMark(suggestedPenalty);
+    rows.push(["Suggested working penalty", "Penalty " + suggestedPenalty + " based on the case indicators already selected. This is not a final Panel decision."]);
+    rows.push(["Estimated revised component mark", estimated ? estimated + " if Penalty " + suggestedPenalty + " is confirmed." : "Enter the mark for the remaining work to estimate the component mark."]);
+  }
+  if(d.pen.length>1){
+    rows.push(["Revised mark guidance", finalPenalty ? "The calculation above uses the selected final penalty. Keep the final Panel decision with the case record." : "Outcome range includes " + d.pen.map(p=>"Penalty "+p).join(" or ") + ". Select the final Panel penalty before treating any revised mark as final."]);
+  }
+  if(d.pen.length>1 && d.pen.includes("C")){
+    rows.push(["If Penalty C is applied", remaining!==null ? "Component mark would be " + fmtMark(remaining) + " based on the remaining work. The full mark range remains available." : "Enter the mark for the remaining work to estimate the component mark. The full mark range remains available."]);
+  }
+  if(d.pen.length>1 && d.pen.includes("D")){
+    rows.push(["If Penalty D is applied", remaining!==null ? "Component mark would be capped at " + fmtMark(Math.min(remaining, pass)) + "." : "Enter the mark for the remaining work to calculate the capped component mark."]);
+  }
+  if(d.pen.length>1 && d.pen.includes("E")){
+    rows.push(["If Penalty E is applied", "Component mark would be 0%. The overall module mark, if otherwise passed, is capped at the pass mark; Board of Examiners decisions may still apply."]);
+  }
+  if(d.pen.length>1 && d.pen.includes("F")){
+    rows.push(["If Penalty F is applied", "No automatic mark calculation. This is a recommendation for suspension or expulsion to the relevant Senior Officer."]);
+  }
+  return rows;
+}
+function revisedMarkText(d=decide()){
+  return revisedMarkRows(d).map(([k,v]) => `${k}: ${v}`).join("\n");
 }
 function genPanelSummaryShort(){
   const t = currentTypeObj();
@@ -735,7 +836,7 @@ function genPanelSummaryShort(){
   lines.push("Student: " + safe(S.sName || "[Not entered]") + (S.sNum ? " (" + safe(S.sNum) + ")" : ""));
   lines.push("Module: " + safe((S.mCode || "") + ((S.mCode && S.mName) ? " - " : "") + (S.mName || "[Not entered]")));
   lines.push("Assessment: " + safe(S.assessItem || "[Not entered]") + " | " + safe(S.assessType || "[Not entered]"));
-  lines.push("Misconduct Type: " + safe(t ? t.id : "[Not selected]"));
+  lines.push("Misconduct Type(s): " + safe(misconductTypeLabel()));
   lines.push("Prior Offences: " + safe(priorLabelFromState()));
   lines.push("Level of Concern: " + safe(S.level || "[Not selected]"));
   lines.push("Route: " + safe(d ? (d.panel==="Faculty" ? "Higher-level internal QAHE review / Faculty-stage equivalent" : "Local QAHE School-stage panel") : "[Not available]"));
@@ -764,8 +865,9 @@ function genPanelSummaryFull(){
   lines.push("Assessment Setting: " + safe(humanSetting(S.setting)));
   lines.push("Submission Date: " + safe(dateVal(S.dSub) || S.dSub || "[Not entered]"));
   lines.push("");
-  lines.push("Misconduct Type: " + safe(t ? t.id : "[Not selected]"));
-  lines.push("Offence Family: " + safe(t ? t.fam : "[Not selected]"));
+  lines.push("Misconduct Type(s): " + safe(misconductTypeLabel()));
+  lines.push("Offence Family: " + safe(offenceFamilyLabel()));
+  lines.push("Governing Appendix 1 route: " + safe(t ? `${t.id} (${t.fam})` : "[Not selected]"));
   lines.push("Prior Offences: " + safe(priorLabelFromState()));
   lines.push("Extent Affected: " + safe(extentLabel()));
   if(S.exceptionalNPR) lines.push("Exceptional NPR Minor Override: Yes");
@@ -783,7 +885,9 @@ function genPanelSummaryFull(){
   lines.push("Level of Concern: " + safe(S.level || "[Not selected]"));
   lines.push("Recommended Route: " + safe(d ? (d.panel==="Faculty" ? "Higher-level internal QAHE review / Faculty-stage equivalent" : "Local QAHE School-stage panel") : "[Not available]"));
   lines.push("Recommended Outcome: " + safe(panelPenaltyText(d)));
+  if(d && d.pen && d.pen.length>1 && !(d.panel==="Faculty" && d.level==="Major")) lines.push("Penalty selection note: These are alternatives; select one final Panel penalty.");
   if(d && d.code) lines.push("Register Code: " + safe(d.code));
+  if(d && d.codes && d.codes.length>1) lines.push("Codes for selected types: " + safe(d.codes.join(", ")));
   if(S.ctx){
     lines.push("");
     lines.push("Brief Case Narrative:");
@@ -802,11 +906,14 @@ function genDecisionSummaryText(){
   const lines = [];
   lines.push("DECISION SNAPSHOT");
   lines.push("");
-  lines.push("Misconduct Type: " + safe(t ? t.id : "[Not selected]"));
+  lines.push("Misconduct Type(s): " + safe(misconductTypeLabel()));
   lines.push("Level of Concern: " + safe(S.level || "[Not selected]"));
   lines.push("Route: " + safe(d ? (d.panel==="Faculty" ? "Higher-level internal QAHE review / Faculty-stage equivalent" : "Local QAHE School-stage panel") : "[Not available]"));
   lines.push("Outcome: " + safe(panelPenaltyText(d)));
   if(d && d.code) lines.push("Register Code: " + safe(d.code));
+  if(d && d.codes && d.codes.length>1) lines.push("Codes for selected types: " + safe(d.codes.join(", ")));
+  lines.push("");
+  lines.push(revisedMarkText(d));
   return lines.join("\n");
 }
 function genPanelPack(){
@@ -861,10 +968,10 @@ function printPanelPack(){
 
 function genCaseSummary(){
   const r=decide(); if(!r) return "";
-  const t=TYPES[S.tIdx];
+  const t=currentTypeObj();
   const panelFull=r.panel==="Faculty"?"Faculty Academic Misconduct Panel / Higher-Level Internal QAHE Review":"School Academic Misconduct Panel / Local QAHE Panel";
   const ev=S.evidence.map(id=>EVIDENCE.find(x=>x.id===id)?.text).filter(Boolean);
-  const measures=r.referral?"Referral only at this stage; no penalty imposed yet.":[...r.actions.map(a=>"Action "+a),...r.pen.map(p=>"Penalty "+p)].join(", ")||"No penalty / dismissal possible";
+  const measures=r.referral?"Referral only at this stage; no penalty imposed yet.":[...r.actions.map(a=>"Action "+a), penaltyOptionText(r)].filter(x=>x&&x!=="No penalty").join("; ")||"No penalty / dismissal possible";
   const lines=[];
   lines.push("CASE SUMMARY — ACADEMIC MISCONDUCT DECISION SUPPORT");
   lines.push("Generated: " + td());
@@ -875,17 +982,23 @@ function genCaseSummary(){
   lines.push("Assessment type: " + safe(S.assessType||"[Not recorded]"));
   lines.push("Setting: " + safe(S.setting||"[Not recorded]"));
   lines.push("Extent affected: " + safe(S.extent||"[Not recorded]"));
-  lines.push("Offence type selected: " + safe(t.id));
-  lines.push("Family: " + safe(t.fam==="PR"?"Plagiarism-Related":"Non-Plagiarism-Related"));
+  lines.push("Offence type(s) selected: " + safe(misconductTypeLabel()));
+  lines.push("Family: " + safe(offenceFamilyLabel()));
+  lines.push("Governing Appendix 1 route: " + safe(t ? `${t.id} (${t.fam})` : "[Not selected]"));
   lines.push("Prior offences: " + safe(S.prior));
   lines.push("Likely level of concern: " + safe(r.level));
   lines.push("Likely handling panel: " + safe(panelFull));
   lines.push("Register code: " + safe(r.code));
+  if(r.codes && r.codes.length>1) lines.push("Codes for selected types: " + safe(r.codes.join(", ")));
   lines.push("Evidence logged:");
   if(ev.length){ ev.forEach(x => lines.push("- " + safe(x))); } else { lines.push("- None selected yet"); }
   lines.push("Narrative: " + safe(S.ctx||"[No narrative entered]"));
   lines.push("Suggested outcome basis: " + safe(r.note));
-  lines.push("Possible measures: " + safe(measures));
+  lines.push("Available actions / penalty options: " + safe(measures));
+  if(r.pen && r.pen.length>1 && !(r.panel==="Faculty" && r.level==="Major")) lines.push("Penalty selection note: These are alternatives; select one final Panel penalty. They are not all applied together.");
+  lines.push("");
+  lines.push("Mark guidance:");
+  revisedMarkRows(r).forEach(([k,v]) => lines.push("- " + safe(k) + ": " + safe(v)));
   lines.push("Reviewer note: " + safe(S.levelNote||"[No reviewer note entered]"));
   lines.push("");
   lines.push("Important: This output is decision support only. Final findings, level of concern, and any penalty must be confirmed by the appropriate Panel under the Procedure.");
@@ -894,7 +1007,6 @@ function genCaseSummary(){
 
 function genInitialContactEmail(){
   const r=decide(); if(!r) return "";
-  const t=TYPES[S.tIdx];
   const route=r.panel==="Faculty"?"higher-level internal QAHE review / panel":"local QAHE School-stage panel review";
   const lines=[];
   lines.push("Subject: Meeting Invitation — Academic Integrity Concern for " + safe(S.mName||"[Module]") + " (" + safe(S.mCode||"") + ")");
@@ -902,7 +1014,7 @@ function genInitialContactEmail(){
   lines.push("Dear " + safe(S.sName||"Student") + ",");
   lines.push("");
   lines.push("I am writing regarding a concern identified during the review of your assessment for " + safe(S.mName||"[Module]") + " (" + safe(S.mCode||"") + ").");
-  lines.push("At this stage, no final decision has been made. The concern relates to possible " + safe(t.id.toLowerCase()) + ".");
+  lines.push("At this stage, no final decision has been made. The concern relates to possible " + safe(misconductTypeLabel().toLowerCase()) + ".");
   lines.push("");
   lines.push("As part of the local QAHE process, we would like to give you the opportunity to respond to the concern and to discuss the available evidence.");
   lines.push("");
@@ -969,6 +1081,7 @@ function genPolicyQuickNotes(){
   lines.push("");
   lines.push("• Plagiarism-related offences are plagiarism, self-plagiarism, and inappropriate use of AI.");
   lines.push("• Non-plagiarism-related offences are collusion, cheating, impersonation, contract cheating, and fabrication / falsification.");
+  lines.push("• More than one misconduct type can apply in the same case. Where selected types cross both families, use the stricter governing route for the recommendation and record the selected types clearly.");
   lines.push("• Collusion, cheating, impersonation, contract cheating, and fabrication / falsification normally start at least at Moderate concern because they usually imply an intent to gain an unfair advantage.");
   lines.push("• Major concerns are referred onward under the formal Procedure. A referral itself is not a penalty.");
   lines.push("• Academic offences are cumulative regardless of type, so a previous offence in another category still counts.");
@@ -983,10 +1096,10 @@ function genPolicyQuickNotes(){
 
 function genForm(){
   const r=decide(); if(!r) return "";
-  const t=TYPES[S.tIdx];
+  const t=currentTypeObj();
   const panelFull=r.panel==="Faculty"?"Faculty Academic Misconduct Panel / Higher-Level Internal QAHE Review":"School Academic Misconduct Panel / Local QAHE Panel";
   const acts=r.actions.map(a=>"Action "+a).join(", ")||"None";
-  const pens=r.referral ?"No penalty at this stage — refer to Faculty Academic Misconduct Panel" : r.range&&r.pen.length>1 ? r.pen.map(p=>"Penalty "+p).join(" or ") : r.pen.map(p=>"Penalty "+p).join(", ")|| (r.panel==="Faculty"?"Penalty C to F (Faculty Panel to determine after Faculty investigation)":"None / Case may be dismissed");
+  const pens=r.referral ?"No penalty at this stage - refer to Faculty Academic Misconduct Panel" : penaltyOptionText(r) || (r.panel==="Faculty"?"Penalty C to F (Faculty Panel to determine after Faculty investigation)":"None / Case may be dismissed");
   const ev=(S.evidence.map(id=>EVIDENCE.find(x=>x.id===id)?.text).filter(Boolean).join("; "))||"[None selected]";
   const lines=[];
   lines.push("ULSTER UNIVERSITY / QA HIGHER EDUCATION");
@@ -1011,12 +1124,15 @@ function genForm(){
   lines.push(hr(54));
   lines.push("MISCONDUCT DETAILS");
   lines.push(hr(54));
-  lines.push("Type of Offence: " + safe(t.id));
-  lines.push("Offence Family: " + safe(t.fam==="PR"?"Plagiarism-Related (PR)":"Non-Plagiarism-Related (NPR)"));
+  lines.push("Type(s) of Offence: " + safe(misconductTypeLabel()));
+  lines.push("Offence Family: " + safe(offenceFamilyLabel()));
+  lines.push("Governing Appendix 1 Route: " + safe(t ? `${t.id} (${t.fam})` : "[Not selected]"));
   lines.push("Level of Concern: " + safe(r.level));
   lines.push("Prior Offences on Record: " + safe(S.prior==="0"?"None":S.prior));
   lines.push("Total Offence Count: " + safe(r.total) + " (including this one)");
   lines.push("Register Code: " + safe(r.code));
+  lines.push("Register Code Note: " + safe(registerCodeHelp(r)));
+  if(r.codes && r.codes.length>1) lines.push("Codes for Selected Types: " + safe(r.codes.join(", ")));
   lines.push("Assessment Item: " + safe(S.assessItem||"[Not recorded]"));
   lines.push("Assessment Type: " + safe(S.assessType||"[Not recorded]"));
   lines.push("Assessment Setting: " + safe(S.setting||"[Not recorded]"));
@@ -1028,8 +1144,12 @@ function genForm(){
   lines.push(hr(54));
   lines.push("Handling Panel: " + safe(panelFull));
   lines.push("Recommended Actions: " + safe(acts));
-  lines.push("Recommended Penalties: " + safe(pens));
+  lines.push("Available / Final Penalty Options: " + safe(pens));
   lines.push("Policy Basis: " + safe(r.note));
+  lines.push(hr(54));
+  lines.push("MARK GUIDANCE");
+  lines.push(hr(54));
+  revisedMarkRows(r).forEach(([k,v]) => lines.push(safe(k) + ": " + safe(v)));
   lines.push(hr(54));
   lines.push("PANEL RECORDS (to be completed after meeting)");
   lines.push(hr(54));
@@ -1050,7 +1170,6 @@ function genForm(){
 
 function genEmail(){
   const r=decide(); if(!r) return "";
-  const t=TYPES[S.tIdx];
   const panelFull=r.panel==="Faculty"?"Faculty Academic Misconduct Panel / Higher-Level Internal QAHE Review":"School Academic Misconduct Panel / Local QAHE Panel";
   const measures=[...r.actions.map(a=>"Action "+a),...r.pen.map(p=>"Penalty "+p)];
   const mStr=r.referral?"referral to the Faculty Academic Misconduct Panel for further investigation":measures.length?measures.join(", "):r.panel==="Faculty"?"penalties determined by the Faculty Panel":"to be confirmed by the Panel";
@@ -1061,7 +1180,7 @@ function genEmail(){
   lines.push("");
   lines.push("I am writing regarding the academic misconduct case associated with your submission for " + safe(S.mName||"[Module]") + " (" + safe(S.mCode||"") + ").");
   lines.push("Following an initial review, it has been determined that the work may constitute academic misconduct under the Ulster University Student Academic Misconduct Procedure (2025).");
-  lines.push("The concern relates to: " + safe(t.id) + ".");
+  lines.push("The concern relates to: " + safe(misconductTypeLabel()) + ".");
   lines.push("The assessment under review is " + safe(S.assessType||"the relevant assessment") + ".");
   lines.push("");
   lines.push("WHAT HAPPENS NEXT");
@@ -1298,11 +1417,11 @@ function s2(){
     {v:"3+", main:"3 or more", sub:"4th+ offence"},
   ];
   return `<div class="step-h">Type of Misconduct</div>
-<div class="step-d">Select the category that best describes what was found. Offences are cumulative — a prior plagiarism offence still counts when recording a collusion case.</div>
+<div class="step-d">Select all categories that describe what was found. The Procedure says the definitions are not mutually exclusive; the recommendation below uses the stricter governing Appendix 1 route where more than one family is selected.</div>
 <div class="card">
-  <div class="ct">Misconduct Category</div>
+  <div class="ct">Misconduct Categories</div>
   <div class="tgrid">
-${TYPES.map((t,i)=>`<div class="tc${S.tIdx===i?" sel":""}" onclick="S.tIdx=${i};S.level='';render()">
+${TYPES.map((t,i)=>`<div class="tc${selectedTypeIndexes().includes(i)?" sel":""}" onclick="toggleType(${i})">
   <div class="rr"><div class="rd"></div></div>
   <div style="flex:1">
     <div class="tlbl">${t.id}</div>
@@ -1311,6 +1430,7 @@ ${TYPES.map((t,i)=>`<div class="tc${S.tIdx===i?" sel":""}" onclick="S.tIdx=${i};
   </div>
 </div>`).join("")}
   </div>
+  <div class="hint" style="margin-top:13px">If both plagiarism-related and non-plagiarism-related types are selected, the app uses the non-plagiarism-related route for the recommended action/penalty because Appendix 1 treats that pathway as the more serious governing route. The register/code section still lists the selected types.</div>
 </div>
 <div class="card">
   <div class="ct">Prior Offences on Record</div>
@@ -1326,8 +1446,7 @@ ${priorOpts.map(({v,main,sub})=>`
 }
 
 function s3(){
-  const t=S.tIdx>=0?TYPES[S.tIdx]:null;
-  const aiNote=t&&t.id==="Inappropriate AI Use";
+  const aiNote=selectedTypes().some(t=>t.id==="Inappropriate AI Use");
   return `<div class="step-h">Evidence &amp; Assessment Context</div>
 <div class="step-d">Record the assessment, how much appears affected, what evidence is available, and a brief factual narrative. The level of concern comes in the next step.</div>
 
@@ -1365,6 +1484,15 @@ function s3(){
           <option value="exam" ${S.setting==="exam"?"selected":""}>Timed / controlled (class test or exam)</option>
           <option value="presentation" ${S.setting==="presentation"?"selected":""}>Presentation / viva / live demonstration</option>
         </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="f"><label>Original / Provisional Mark (%)</label><input type="number" min="0" max="100" step="0.01" value="${E(S.currentMark)}" placeholder="e.g. 68" oninput="S.currentMark=this.value"></div>
+        <div class="f"><label>Pass Mark (%)</label><input type="number" min="0" max="100" step="0.01" value="${E(S.passMark)}" placeholder="e.g. 40" oninput="S.passMark=this.value"></div>
+      </div>
+      <div class="f">
+        <label>Mark After Removing Misconduct Material (%)</label>
+        <input type="number" min="0" max="100" step="0.01" value="${E(S.remainingMark)}" placeholder="Needed for Penalty C or D" oninput="S.remainingMark=this.value">
+        <div class="hint">Use this only where the marker can judge the quality of the remaining unaffected work. Penalty E is always zero for the component; Faculty-stage or penalty-range outcomes cannot produce one final mark until the Panel decides the final penalty.</div>
       </div>
     </div>
   </div>
@@ -1414,7 +1542,7 @@ ${EVIDENCE.map(s=>`<div class="si${S.evidence.includes(s.id)?" ck":""}" onclick=
 
 
 function s4(){
-  const t=S.tIdx>=0?TYPES[S.tIdx]:null;
+  const t=governingTypeObj();
   const sug=suggestLevel();
   const isNPR=t&&t.fam==="NPR";
   const prior=S.prior==="3+"?3:parseInt(S.prior||"0",10);
@@ -1490,25 +1618,36 @@ function s5(){
     <p style="font-size:13px">Please complete Steps 2–5 first, then return here.</p>
   </div>`;
 
-  const t=TYPES[S.tIdx];
+  const t=currentTypeObj();
   const panelFull=r.panel==="Faculty"?"Faculty Academic Misconduct Panel / Higher-Level Internal QAHE Review":"School Academic Misconduct Panel / Local QAHE Panel";
   const lvl=r.level.toLowerCase();
-  const allM=[...r.actions.map(a=>"Action "+a),...r.pen.map(p=>"Penalty "+p)];
+  const allM=[...r.actions.map(a=>"Action "+a), penaltyOptionText(r)].filter(x=>x&&x!=="No penalty");
   const sumLine=r.referral
     ?`Referral to Faculty Panel — no penalty at this stage`
     :r.panel==="Faculty"
     ?`Faculty Panel — ${r.level} concern, penalty range C–F after Faculty investigation`
-    :allM.length?`${r.level} concern — ${allM.join(", ")}`:"No case to answer — case may be dismissed";
+    :allM.length?`${r.level} concern — ${allM.join("; ")}`:"No case to answer — case may be dismissed";
   const facWarn=r.referral
     ?`<div class="warn">Under Appendix 1, this is a referral only. No penalty is imposed at this stage and there is no right of appeal against the decision to refer.</div>`
     :r.panel==="Faculty"&&S.level==="Major"
     ?`<div class="warn">Major offences are considered by the Faculty Academic Misconduct Panel. The final penalty is determined only after Faculty investigation.</div>`
     :"";
 
-  const penChips=r.pen.map(p=>`<span class="chip ch-p">Penalty ${p}</span>`).join("");
+  const penChips=r.pen.map(p=>`<span class="chip ch-p">${r.pen.length===1?"Penalty "+p+" applies":"Option: Penalty "+p}</span>`).join("");
   const actChips=r.actions.map(a=>`<span class="chip ch-a">Action ${a}</span>`).join("");
   const dismissChip=!r.actions.length&&!r.pen.length&&r.panel!=="Faculty"?`<span class="chip ch-d">No Penalty / Dismiss</span>`:"";
   const referChip=r.panel==="Faculty"?`<span class="chip ch-r">Refer to Faculty Panel</span>`:"";
+  const markRows=revisedMarkRows(r);
+  const finalPenaltyPicker=(r.pen&&r.pen.length>1&&!(r.referral || (r.panel==="Faculty" && r.level==="Major")))?`
+      <div class="f" style="margin-bottom:12px">
+        <label>Final Panel Penalty Applied</label>
+        <select onchange="S.finalPenalty=this.value;render()">
+          <option value="" ${!finalPenaltyForCalc(r)?"selected":""}>Select one final penalty...</option>
+          ${r.pen.map(p=>`<option value="${p}" ${finalPenaltyForCalc(r)===p?"selected":""}>Penalty ${p}</option>`).join("")}
+        </select>
+        <div class="hint">For School-stage ranges such as Penalty D or E, these are alternatives. Select the one actually applied by the Panel; do not apply both. For Penalty C or D, the marker must still enter the mark for the remaining unaffected work.</div>
+      </div>`:(r.pen&&r.pen.length===1&&!(r.referral || (r.panel==="Faculty" && r.level==="Major")))?`
+      <div class="disc" style="margin-bottom:12px"><strong>Penalty ${r.pen[0]} applies under this policy route.</strong><br>There is no penalty choice to make here. Enter the remaining-work mark where needed and the app will calculate the revised component mark.</div>`:"";
 
   const penList=r.pen.map(p=>`
     <div style="padding:10px 0;border-bottom:1px solid var(--border)">
@@ -1544,9 +1683,23 @@ ${facWarn}
       <div class="rtxt">${r.note}</div>
     </div>
     <div class="rc" style="margin-bottom:10px">
-      <div class="rct">Actions &amp; Penalties</div>
+      <div class="rct">Available Actions &amp; Penalty Options</div>
       <div style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:6px">${actChips}${penChips}${dismissChip}${referChip}${r.exceptional?`<span class="chip ch-r">Exceptional NPR Minor only</span>`:""}</div>
+      ${r.pen.length>1&&!(r.panel==="Faculty"&&r.level==="Major")?`<div class="warn" style="margin-bottom:10px">The listed penalties are policy alternatives. Select one final Panel penalty in the Mark Guidance section; do not apply all of them.</div>`:""}
+      ${r.panel==="Faculty"&&r.level==="Major"?`<div class="warn" style="margin-bottom:10px">For Major Faculty-stage cases, Appendix 1 allows any penalty or combination of penalties from C-F. The Faculty Panel determines the final outcome after investigation.</div>`:""}
       ${actList||penList?`<div>${actList}${penList}</div>`:""}
+    </div>
+    <div class="rc" style="margin-bottom:10px">
+      <div class="rct">Mark Guidance</div>
+      ${finalPenaltyPicker}
+      <div style="display:flex;flex-direction:column;gap:0">
+        ${markRows.map(([k,v])=>`
+        <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div class="sk" style="min-width:190px">${k}</div>
+          <div class="sv" style="font-weight:500;line-height:1.55">${v}</div>
+        </div>`).join("")}
+      </div>
+      <div class="hint" style="margin-top:10px">This is a support calculation only. Penalty C and D depend on the marker's academic judgement after disregarding the misconduct-related material; module-level caps and resit or condonement questions may require Board of Examiners decisions.</div>
     </div>
     <div class="rc" style="margin-bottom:0">
       <div class="rct">Next Steps for Staff</div>
@@ -1574,8 +1727,8 @@ ${facWarn}
       <div class="rct">Register Details</div>
       <div style="display:flex;flex-direction:column;gap:1px">
         ${[
-          ["Type", t.id],
-          ["Family", t.fam==="PR"?"Plagiarism-Related":"Non-Plagiarism-Related"],
+          ["Type(s)", misconductTypeLabel()],
+          ["Family", offenceFamilyLabel()],
           ["Level", r.level],
           ["Offence #", r.total+" (incl. this one)"],
         ].map(([k,v])=>`
@@ -1586,6 +1739,8 @@ ${facWarn}
         <div style="padding:12px 0 4px">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text-dim);margin-bottom:6px">Register Code</div>
           <div style="font-family:'Courier New',monospace;font-size:24px;font-weight:700;color:var(--navy);letter-spacing:2px">${r.code}</div>
+          <div class="hint" style="margin-top:8px">${registerCodeHelp(r)}</div>
+          ${r.codes&&r.codes.length>1?`<div style="font-size:12px;color:var(--text-muted);margin-top:5px">Selected-type codes: ${r.codes.join(", ")}</div>`:""}
         </div>
       </div>
     </div>
@@ -1636,8 +1791,9 @@ ${S.tab==="decision"?`
   <div style="font-size:15px;font-weight:700;color:var(--blue);margin-bottom:7px">${panelFull}</div>
   <div class="rtxt">${r.note}</div>
 </div>
-<div class="rc"><div class="rct">Actions &amp; Penalties — Full Detail</div>
+<div class="rc"><div class="rct">Available Actions &amp; Penalty Options - Full Detail</div>
   <div style="margin-bottom:14px">${actChips}${penChips}${dismissChip}${referChip}</div>
+  ${r.pen.length>1&&!(r.panel==="Faculty"&&r.level==="Major")?`<div class="warn">These are alternatives in the policy range. Select one final Panel penalty before calculating a final component mark.</div>`:""}
   ${actList||penList?`<div>${actList}${penList}</div>`:""}
 </div>
 `:""}
@@ -1702,6 +1858,14 @@ ${S.tab==="panelpack"?`
 
 
 // ════════════════ HELPERS ════════════════
+function toggleType(i){
+  const exists = selectedTypeIndexes().includes(i);
+  S.tIdxs = exists ? selectedTypeIndexes().filter(x=>x!==i) : [...selectedTypeIndexes(), i];
+  S.tIdx = S.tIdxs.length ? S.tIdxs[0] : -1;
+  S.level = "";
+  if(!selectedTypes().some(t=>t.fam==="NPR")) S.exceptionalNPR=false;
+  render();
+}
 function tog(id){S.flags=S.flags.includes(id)?S.flags.filter(x=>x!==id):[...S.flags,id];render();}
 function togList(key,id){S[key]=S[key].includes(id)?S[key].filter(x=>x!==id):[...S[key],id];render();}
 function doCopy(w){
@@ -1734,8 +1898,33 @@ function humanSetting(v){
   if(v==="presentation") return "Presentation / viva / live demonstration";
   return "Coursework / take-home setting";
 }
+function selectedTypeIndexes(){
+  if(Array.isArray(S.tIdxs) && S.tIdxs.length) return S.tIdxs.filter(i => TYPES[i]);
+  return S.tIdx>=0 && TYPES[S.tIdx] ? [S.tIdx] : [];
+}
+function selectedTypes(){
+  return selectedTypeIndexes().map(i => TYPES[i]);
+}
+function governingTypeObj(){
+  const types = selectedTypes();
+  if(!types.length) return null;
+  const npr = types.find(t => t.fam==="NPR");
+  return npr || types[0];
+}
+function misconductTypeLabel(){
+  const types = selectedTypes();
+  return types.length ? types.map(t => t.id).join("; ") : "[Not selected]";
+}
+function offenceFamilyLabel(){
+  const types = selectedTypes();
+  if(!types.length) return "[Not selected]";
+  const hasPR = types.some(t => t.fam==="PR");
+  const hasNPR = types.some(t => t.fam==="NPR");
+  if(hasPR && hasNPR) return "Mixed: Plagiarism-Related and Non-Plagiarism-Related";
+  return hasPR ? "Plagiarism-Related" : "Non-Plagiarism-Related";
+}
 function currentTypeObj(){
-  return S.tIdx>=0 ? TYPES[S.tIdx] : null;
+  return governingTypeObj();
 }
 function buildCaseRecord(){
   const t = currentTypeObj();
@@ -1755,12 +1944,23 @@ function buildCaseRecord(){
     assessment_item: S.assessItem || "",
     assessment_type: S.assessType || "",
     assessment_setting: humanSetting(S.setting),
+    original_or_provisional_component_mark: S.currentMark || "",
+    remaining_work_component_mark: S.remainingMark || "",
+    pass_mark: S.passMark || "",
+    final_penalty_used_for_mark_calculation: d ? finalPenaltyForCalc(d) : "",
+    suggested_working_penalty_for_estimate: d ? suggestedPenaltyForEstimate(d) : "",
+    computed_revised_component_mark: d ? computedPenaltyMark(finalPenaltyForCalc(d)) : "",
+    estimated_revised_component_mark: d ? computedPenaltyMark(suggestedPenaltyForEstimate(d)) : "",
+    revised_mark_guidance: d ? revisedMarkText(d) : "",
     date_submitted: S.dSub || "",
     date_detected: "",
     date_student_meeting: "",
     student_meeting_mode: "Microsoft Teams",
     misconduct_type: t ? t.id : "",
-    offence_family: t ? t.fam : "",
+    misconduct_types: selectedTypes().map(type => type.id),
+    governing_misconduct_type: t ? t.id : "",
+    offence_family: offenceFamilyLabel(),
+    governing_offence_family: t ? t.fam : "",
     level_of_concern: S.level || "",
     exceptional_npr_minor: !!S.exceptionalNPR,
     panel_type: d ? (d.panel==="Faculty" ? "Higher-level internal QAHE review / Faculty-stage equivalent" : "Local QAHE School-stage panel") : "",
@@ -1782,6 +1982,8 @@ function buildCaseRecord(){
     recommended_penalties: d ? (d.pen || []) : [],
     referral_only: d ? !!d.referral : false,
     register_code: d ? (d.code || "") : "",
+    register_codes_for_selected_types: d ? (d.codes || []) : [],
+    register_code_note: d ? registerCodeHelp(d) : "",
     form_completed_by: S.coord || "",
     form_completed_role: "Module Leader",
     date_completed: new Date().toISOString().slice(0,10),
@@ -1840,8 +2042,15 @@ function decisionDetailText(){
     "Actions:",
     (d.actions && d.actions.length ? d.actions.map(x => `Action ${x}`).join(", ") : "None"),
     "",
-    "Penalties:",
-    (d.pen && d.pen.length ? d.pen.map(x => `Penalty ${x}`).join(", ") : "None")
+    "Available / Final Penalty Options:",
+    penaltyOptionText(d),
+    "",
+    "Register Codes for Selected Types:",
+    (d.codes && d.codes.length ? d.codes.join(", ") : d.code || "None"),
+    registerCodeHelp(d),
+    "",
+    "Mark Guidance:",
+    revisedMarkText(d)
   ].join("\n");
 }
 function getOutputBundle(){
@@ -1979,7 +2188,9 @@ function evidenceIdsFromNames(items){
   return out;
 }
 function applyCaseRecord(data){
-  const idx = typeIndexFromName(data.misconduct_type || "");
+  const typeNames = Array.isArray(data.misconduct_types) && data.misconduct_types.length ? data.misconduct_types : [data.misconduct_type || data.governing_misconduct_type || ""];
+  const idxs = typeNames.map(typeIndexFromName).filter(i => i>=0);
+  const idx = idxs.length ? idxs[0] : -1;
   const rawPrior = typeof data.prior_offences === "number" ? data.prior_offences : parseInt(String(data.prior_offences || "0"), 10);
   const prior = isNaN(rawPrior) ? "0" : (rawPrior >= 3 ? "3+" : String(rawPrior));
   Object.assign(S, {
@@ -1994,11 +2205,16 @@ function applyCaseRecord(data){
     coord: data.qahe_module_leader || data.form_completed_by || "",
     dSub: dateVal(data.date_submitted || ""),
     tIdx: idx,
+    tIdxs: idxs,
     prior: prior,
     assessItem: data.assessment_item || "",
     assessType: data.assessment_type || "",
     setting: settingToState(data.assessment_setting || ""),
     extent: extentToState(data.extent_affected || ""),
+    currentMark: data.original_or_provisional_component_mark || "",
+    remainingMark: data.remaining_work_component_mark || "",
+    passMark: data.pass_mark || "40",
+    finalPenalty: data.final_penalty_used_for_mark_calculation || "",
     evidence: evidenceIdsFromNames(data.evidence_items || []),
     level: data.level_of_concern || "",
     levelNote: data.narrative_and_rationale || "",
@@ -2109,19 +2325,30 @@ async function buildDocxBlob(){
       ["Assessment item", rec.assessment_item],
       ["Assessment type", rec.assessment_type],
       ["Assessment setting", rec.assessment_setting],
+      ["Original / provisional component mark", rec.original_or_provisional_component_mark],
+      ["Remaining-work component mark", rec.remaining_work_component_mark],
+      ["Pass mark", rec.pass_mark],
+      ["Final penalty used for mark calculation", rec.final_penalty_used_for_mark_calculation],
+      ["Suggested working penalty for estimate", rec.suggested_working_penalty_for_estimate],
+      ["Computed revised component mark", rec.computed_revised_component_mark],
+      ["Estimated revised component mark", rec.estimated_revised_component_mark],
       ["Date submitted", rec.date_submitted]
     ]),
 
     new d.Paragraph({ text: "2. Misconduct Classification", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
     docxKVTable([
-      ["Misconduct type", rec.misconduct_type],
+      ["Misconduct type(s)", (rec.misconduct_types || []).join("; ") || rec.misconduct_type],
+      ["Governing misconduct type", rec.governing_misconduct_type],
       ["Offence family", rec.offence_family],
+      ["Governing offence family", rec.governing_offence_family],
       ["Level of concern", rec.level_of_concern],
       ["Prior offences", String(rec.prior_offences)],
       ["Offence count label", rec.offence_count_label],
       ["Exceptional NPR minor", rec.exceptional_npr_minor ? "Yes" : "No"],
       ["Panel type", rec.panel_type],
-      ["Register code", rec.register_code]
+      ["Register code", rec.register_code],
+      ["Register codes for selected types", (rec.register_codes_for_selected_types || []).join(", ")],
+      ["Register code note", rec.register_code_note]
     ]),
 
     new d.Paragraph({ text: "3. Evidence and Narrative", heading: d.HeadingLevel.HEADING_1, spacing: { before: 220, after: 140 } }),
@@ -2138,7 +2365,8 @@ async function buildDocxBlob(){
     docxKVTable([
       ["Handling panel", decision ? decision.panel : ""],
       ["Decision note", decision ? decision.note : ""],
-      ["Referral only", rec.referral_only ? "Yes" : "No"]
+      ["Referral only", rec.referral_only ? "Yes" : "No"],
+      ["Revised mark guidance", rec.revised_mark_guidance]
     ]),
     new d.Paragraph({ text: "Recommended actions", heading: d.HeadingLevel.HEADING_2, spacing: { before: 120 } }),
     ...docxBullets(actionsList),
@@ -2183,16 +2411,16 @@ async function exportDocx(){
   }
 }
 function newCase(){
-  Object.assign(S,{step:0,sName:"",sNum:"",prog:"",yr:"",ugpg:"UG",mName:"",mCode:"",coord:"",dSub:"",tIdx:-1,prior:"0",assessItem:"",assessType:"",setting:"coursework",extent:"",evidence:[],level:"",levelNote:"",flags:[],ctx:"",exceptionalNPR:false,tab:"contact",copied:""});
+  Object.assign(S,{step:0,sName:"",sNum:"",prog:"",yr:"",ugpg:"UG",mName:"",mCode:"",coord:"",dSub:"",tIdx:-1,tIdxs:[],prior:"0",assessItem:"",assessType:"",setting:"coursework",extent:"",currentMark:"",remainingMark:"",passMark:"40",finalPenalty:"",evidence:[],level:"",levelNote:"",flags:[],ctx:"",exceptionalNPR:false,tab:"contact",copied:""});
   render();
 }
 
 function canGo(){
   if(S.step===0) return true;
   if(S.step===1) return true;
-  if(S.step===2) return S.tIdx>=0;
+  if(S.step===2) return selectedTypeIndexes().length>0;
   if(S.step===3) return !!S.assessType && !!S.setting && !!S.extent;
-  if(S.step===4){ if(!S.level) return false; const t=S.tIdx>=0?TYPES[S.tIdx]:null; if(t&&t.fam==="NPR"&&S.level==="Minor"&&!S.exceptionalNPR) return false; if(t&&t.fam==="NPR"&&S.level==="Minor"&&S.prior!=="0") return false; if(t&&t.fam==="NPR"&&S.level==="Minor") return !!(S.levelNote||"").trim(); return true; }
+  if(S.step===4){ if(!S.level) return false; const t=governingTypeObj(); if(t&&t.fam==="NPR"&&S.level==="Minor"&&!S.exceptionalNPR) return false; if(t&&t.fam==="NPR"&&S.level==="Minor"&&S.prior!=="0") return false; if(t&&t.fam==="NPR"&&S.level==="Minor") return !!(S.levelNote||"").trim(); return true; }
   return true;
 }
 function goNext(){if(canGo()&&S.step<5){S.step++;render();window.scrollTo(0,0);}}
