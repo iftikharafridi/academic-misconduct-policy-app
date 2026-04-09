@@ -353,6 +353,44 @@ header{
   font-size:12.5px;color:var(--text-mid);
   line-height:1.6;margin-top:8px;
 }
+.egbox{
+  background:#fcfcf7;
+  border:1px solid #e7dec0;
+  border-radius:8px;
+  padding:13px 15px;
+  margin-bottom:12px;
+}
+.egtitle{
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  color:var(--gold);
+  margin-bottom:8px;
+}
+.eggrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+@media(max-width:700px){.eggrid{grid-template-columns:1fr;}}
+.egcard{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:11px 12px;
+}
+.eghead{
+  font-size:13px;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:6px;
+}
+.egtext{
+  font-size:12.5px;
+  color:var(--text-body);
+  line-height:1.6;
+}
 
 /* ── TABLE ROWS ── */
 .srow{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
@@ -628,7 +666,8 @@ const S={
   sName:"",sNum:"",prog:"",yr:"",ugpg:"UG",
   mName:"",mCode:"",coord:"",dSub:"",
   tIdx:-1,tIdxs:[],prior:"0",
-  assessItem:"",assessType:"",setting:"coursework",extent:"",currentMark:"",remainingMark:"",passMark:"40",finalPenalty:"",evidence:[],
+  assessItem:"",assessType:"",setting:"coursework",extent:"",currentMark:"",remainingMark:"",passMark:"40",finalPenalty:"",
+  componentTotalMarks:"",marksGained:"",componentWeight:"",evidence:[],
   level:"",levelNote:"",flags:[],ctx:"",
   exceptionalNPR:false,
   tab:"contact",copied:"",
@@ -749,6 +788,35 @@ function fmtMark(v){
   if(n===null) return "";
   return (Math.round(n * 100) / 100).toString() + "%";
 }
+function fmtNum(v){
+  const n = markNum(v);
+  if(n===null) return "";
+  return (Math.round(n * 100) / 100).toString();
+}
+function rawMarkSummary(){
+  const gained = markNum(S.marksGained);
+  const total = markNum(S.componentTotalMarks);
+  if(gained===null && total===null) return "";
+  if(gained!==null && total!==null) return `${fmtNum(gained)} / ${fmtNum(total)}`;
+  if(gained!==null) return `${fmtNum(gained)} / [total not entered]`;
+  return `[gained not entered] / ${fmtNum(total)}`;
+}
+function derivedCurrentPercent(){
+  const gained = markNum(S.marksGained);
+  const total = markNum(S.componentTotalMarks);
+  if(gained===null || total===null || total<=0) return null;
+  return (gained / total) * 100;
+}
+function currentPercentForDisplay(){
+  const current = markNum(S.currentMark);
+  const derived = derivedCurrentPercent();
+  return derived!==null ? derived : current;
+}
+function weightedModuleContribution(markPercent){
+  const weight = markNum(S.componentWeight);
+  if(markPercent===null || weight===null) return null;
+  return (markPercent * weight) / 100;
+}
 function finalPenaltyForCalc(d){
   if(!d || !(d.pen||[]).length) return "";
   if(S.finalPenalty && d.pen.includes(S.finalPenalty)) return S.finalPenalty;
@@ -776,13 +844,20 @@ function computedPenaltyMark(penalty){
 function revisedMarkRows(d){
   const rows = [];
   const current = markNum(S.currentMark);
+  const displayCurrent = currentPercentForDisplay();
   const remaining = markNum(S.remainingMark);
   const pass = markNum(S.passMark) ?? 40;
+  const rawSummary = rawMarkSummary();
+  const weight = markNum(S.componentWeight);
   const finalPenalty = finalPenaltyForCalc(d);
   const suggestedPenalty = suggestedPenaltyForEstimate(d);
-  if(current!==null) rows.push(["Original / provisional component mark", fmtMark(current)]);
-  if(remaining!==null) rows.push(["Marker's mark after removing misconduct material", fmtMark(remaining)]);
-  rows.push(["Component pass mark used for cap", fmtMark(pass)]);
+  if(rawSummary) rows.push(["Raw mark entered", rawSummary]);
+  if(displayCurrent!==null) rows.push([derivedCurrentPercent()!==null ? "Auto-converted original mark (%)" : "Original mark before penalty (%)", fmtMark(displayCurrent) + (derivedCurrentPercent()!==null ? " calculated from the raw mark entered." : "")]);
+  if(weight!==null) rows.push(["Component weighting within module", fmtMark(weight)]);
+  const originalContribution = weightedModuleContribution(displayCurrent);
+  if(originalContribution!==null) rows.push(["Original module contribution from this component", fmtMark(originalContribution)]);
+  if(remaining!==null) rows.push(["Marker's judgment on unaffected work", fmtMark(remaining)]);
+  rows.push(["Module or programme pass mark used for cap", fmtMark(pass)]);
   if(!d){
     rows.push(["Revised mark guidance", "Complete the level of concern before using the mark guide."]);
     return rows;
@@ -799,6 +874,8 @@ function revisedMarkRows(d){
     const computed = computedPenaltyMark(finalPenalty);
     if(computed){
       rows.push(["Computed revised component mark", computed + " using Penalty " + finalPenalty + "."]);
+      const moduleContribution = weightedModuleContribution(markNum(computed));
+      if(moduleContribution!==null) rows.push(["Computed revised module contribution", fmtMark(moduleContribution) + " after applying Penalty " + finalPenalty + "."]);
     } else if(finalPenalty==="F"){
       rows.push(["Computed revised component mark", "Not applicable. Penalty F is a recommendation for suspension or expulsion, not an automatic component-mark calculation."]);
     }
@@ -806,9 +883,16 @@ function revisedMarkRows(d){
     const estimated = computedPenaltyMark(suggestedPenalty);
     rows.push(["Suggested working penalty", "Penalty " + suggestedPenalty + " based on the case indicators already selected. This is not a final Panel decision."]);
     rows.push(["Estimated revised component mark", estimated ? estimated + " if Penalty " + suggestedPenalty + " is confirmed." : "Enter the mark for the remaining work to estimate the component mark."]);
+    if(estimated){
+      const estimatedContribution = weightedModuleContribution(markNum(estimated));
+      if(estimatedContribution!==null) rows.push(["Estimated revised module contribution", fmtMark(estimatedContribution) + " if Penalty " + suggestedPenalty + " is confirmed."]);
+    }
   }
   if(d.pen.length>1){
     rows.push(["Revised mark guidance", finalPenalty ? "The calculation above uses the selected final penalty. Keep the final Panel decision with the case record." : "Outcome range includes " + d.pen.map(p=>"Penalty "+p).join(" or ") + ". Select the final Panel penalty before treating any revised mark as final."]);
+  }
+  if((d.pen||[]).length && !d.referral && !(d.panel==="Faculty" && d.level==="Major")){
+    rows.push(["How to use this section", finalPenalty ? "You selected the final Panel penalty, so the tool shows the resulting revised mark automatically." : "First select the final Panel penalty actually applied. Once that is selected, the tool will show the resulting revised mark automatically where the policy allows a calculation."]);
   }
   if(d.pen.length>1 && d.pen.includes("C")){
     rows.push(["If Penalty C is applied", remaining!==null ? "Component mark would be " + fmtMark(remaining) + " based on the remaining work. The full mark range remains available." : "Enter the mark for the remaining work to estimate the component mark. The full mark range remains available."]);
@@ -978,10 +1062,12 @@ function genCaseSummary(){
   lines.push("");
   lines.push("Student: " + safe(S.sName||"[Not provided]") + " (" + safe(S.sNum||"No number") + ")");
   lines.push("Module: " + safe(S.mName||"[Not provided]") + " (" + safe(S.mCode||"[No code]") + ")");
-  lines.push("Assessment item: " + safe(S.assessItem||"[Not recorded]"));
-  lines.push("Assessment type: " + safe(S.assessType||"[Not recorded]"));
-  lines.push("Setting: " + safe(S.setting||"[Not recorded]"));
-  lines.push("Extent affected: " + safe(S.extent||"[Not recorded]"));
+    lines.push("Assessment item: " + safe(S.assessItem||"[Not recorded]"));
+    lines.push("Assessment type: " + safe(S.assessType||"[Not recorded]"));
+    lines.push("Setting: " + safe(S.setting||"[Not recorded]"));
+    if(S.componentTotalMarks || S.marksGained) lines.push("Marks gained out of total: " + safe(rawMarkSummary()||"[Not recorded]"));
+    if(S.componentWeight) lines.push("Component weighting in module: " + safe(fmtMark(S.componentWeight)));
+    lines.push("Extent affected: " + safe(S.extent||"[Not recorded]"));
   lines.push("Offence type(s) selected: " + safe(misconductTypeLabel()));
   lines.push("Family: " + safe(offenceFamilyLabel()));
   lines.push("Governing Appendix 1 route: " + safe(t ? `${t.id} (${t.fam})` : "[Not selected]"));
@@ -1136,6 +1222,8 @@ function genForm(){
   lines.push("Assessment Item: " + safe(S.assessItem||"[Not recorded]"));
   lines.push("Assessment Type: " + safe(S.assessType||"[Not recorded]"));
   lines.push("Assessment Setting: " + safe(S.setting||"[Not recorded]"));
+  lines.push("Marks Gained out of Total: " + safe(rawMarkSummary()||"[Not recorded]"));
+  lines.push("Component Weighting in Module: " + safe(S.componentWeight ? fmtMark(S.componentWeight) : "[Not recorded]"));
   lines.push("Extent Affected: " + safe(S.extent||"[Not recorded]"));
   lines.push("Evidence Logged: " + safe(ev));
   lines.push("Summary of Misconduct: " + safe(S.ctx||"[To be completed by the Panel]"));
@@ -1486,13 +1574,32 @@ function s3(){
         </select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="f"><label>Original / Provisional Mark (%)</label><input type="number" min="0" max="100" step="0.01" value="${E(S.currentMark)}" placeholder="e.g. 68" oninput="S.currentMark=this.value"></div>
-        <div class="f"><label>Pass Mark (%)</label><input type="number" min="0" max="100" step="0.01" value="${E(S.passMark)}" placeholder="e.g. 40" oninput="S.passMark=this.value"></div>
+        <div class="f"><label>Total Marks for This Assessment</label><input type="number" min="0" step="0.01" value="${E(S.componentTotalMarks)}" placeholder="e.g. 100" oninput="S.componentTotalMarks=this.value" onchange="render()" onblur="render()"></div>
+        <div class="f"><label>Student's Raw Mark</label><input type="number" min="0" step="0.01" value="${E(S.marksGained)}" placeholder="e.g. 68" oninput="S.marksGained=this.value" onchange="render()" onblur="render()"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="f">
+          <label>Auto-Converted Original Mark (%)</label>
+          <input type="text" value="${E(derivedCurrentPercent()!==null ? fmtMark(derivedCurrentPercent()) : (markNum(S.currentMark)!==null ? fmtMark(S.currentMark) : ""))}" placeholder="Shown automatically when raw mark and total marks are entered" readonly>
+          <div class="hint">This is worked out automatically from the raw mark and total marks above. Older saved records that only stored a percentage will still display here.</div>
+        </div>
+        <div class="f"><label>Component Weighting in Module (%)</label><input type="number" min="0" max="100" step="0.01" value="${E(S.componentWeight)}" placeholder="e.g. 40" oninput="S.componentWeight=this.value" onchange="render()" onblur="render()"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="f">
+          <label>Programme / Module Pass Mark (%)</label>
+          <input type="number" min="0" max="100" step="0.01" value="${E(S.passMark)}" placeholder="e.g. 40 or 50" oninput="S.passMark=this.value" onchange="render()" onblur="render()">
+          <div class="hint">Enter the actual pass threshold used for this module or programme. For example, this might be 40% for some undergraduate modules and 50% for some MSc modules, but it can vary by programme.</div>
+        </div>
+        <div class="f"><label>Example</label><input type="text" value="" placeholder="68 out of 100 becomes 68%" readonly></div>
       </div>
       <div class="f">
-        <label>Mark After Removing Misconduct Material (%)</label>
-        <input type="number" min="0" max="100" step="0.01" value="${E(S.remainingMark)}" placeholder="Needed for Penalty C or D" oninput="S.remainingMark=this.value">
-        <div class="hint">Use this only where the marker can judge the quality of the remaining unaffected work. Penalty E is always zero for the component; Faculty-stage or penalty-range outcomes cannot produce one final mark until the Panel decides the final penalty.</div>
+        <label>Marker's Judgment on Unaffected Work (%)</label>
+        <input type="number" min="0" max="100" step="0.01" value="${E(S.remainingMark)}" placeholder="Needed for Penalty C or D" oninput="S.remainingMark=this.value" onchange="render()" onblur="render()">
+        <div class="hint">This is not auto-calculated by the app. The marker must decide this percentage after ignoring the misconduct-affected material. The app then uses that figure when Penalty C or D is selected.</div>
+      </div>
+      <div class="hint">
+        Example: Coursework 1 is marked out of 100 and worth 40% of the module. If the student scored 68 out of 100, the app converts that to 68%. If the marker later judges the unaffected work as 45%, the app uses 45% for Penalty C, applies the pass-mark cap for Penalty D, and gives 0% for Penalty E.
       </div>
     </div>
   </div>
@@ -1638,6 +1745,20 @@ function s5(){
   const dismissChip=!r.actions.length&&!r.pen.length&&r.panel!=="Faculty"?`<span class="chip ch-d">No Penalty / Dismiss</span>`:"";
   const referChip=r.panel==="Faculty"?`<span class="chip ch-r">Refer to Faculty Panel</span>`:"";
   const markRows=revisedMarkRows(r);
+  const workedExamples = `
+      <div class="egbox">
+        <div class="egtitle">Worked Examples</div>
+        <div class="eggrid">
+          <div class="egcard">
+            <div class="eghead">UG example: pass mark 40%</div>
+            <div class="egtext">Coursework 1 is worth 40% of the module and marked out of 100. The student scored 68 out of 100, so the app converts this to 68% and the original module contribution is 27.2%. The marker then reviews only the unaffected work and decides it is worth 45%. Penalty C gives 45%, Penalty D gives 40% when the UG pass mark is 40%, and Penalty E gives 0%.</div>
+          </div>
+          <div class="egcard">
+            <div class="eghead">MSc example: pass mark 50%</div>
+            <div class="egtext">Coursework 1 is worth 40% of the module and marked out of 100. The student scored 68 out of 100, so the app converts this to 68%. The marker then reviews only the unaffected work and decides it is worth 58%. Penalty C gives 58%, Penalty D gives 50% because the MSc pass mark is 50%, and Penalty E gives 0%.</div>
+          </div>
+        </div>
+      </div>`;
   const finalPenaltyPicker=(r.pen&&r.pen.length>1&&!(r.referral || (r.panel==="Faculty" && r.level==="Major")))?`
       <div class="f" style="margin-bottom:12px">
         <label>Final Panel Penalty Applied</label>
@@ -1645,9 +1766,9 @@ function s5(){
           <option value="" ${!finalPenaltyForCalc(r)?"selected":""}>Select one final penalty...</option>
           ${r.pen.map(p=>`<option value="${p}" ${finalPenaltyForCalc(r)===p?"selected":""}>Penalty ${p}</option>`).join("")}
         </select>
-        <div class="hint">For School-stage ranges such as Penalty D or E, these are alternatives. Select the one actually applied by the Panel; do not apply both. For Penalty C or D, the marker must still enter the mark for the remaining unaffected work.</div>
+        <div class="hint">For School-stage ranges such as Penalty D or E, these are alternatives. Select the one actually applied by the Panel; do not apply both. For Penalty C or D, the marker must still enter the mark for the remaining unaffected work. Once the final penalty is selected, the revised mark is shown automatically below where a calculation is possible.</div>
       </div>`:(r.pen&&r.pen.length===1&&!(r.referral || (r.panel==="Faculty" && r.level==="Major")))?`
-      <div class="disc" style="margin-bottom:12px"><strong>Penalty ${r.pen[0]} applies under this policy route.</strong><br>There is no penalty choice to make here. Enter the remaining-work mark where needed and the app will calculate the revised component mark.</div>`:"";
+      <div class="disc" style="margin-bottom:12px"><strong>Penalty ${r.pen[0]} applies under this policy route.</strong><br>There is no penalty choice to make here. Enter the remaining-work mark where needed and the app will calculate the revised component mark automatically.</div>`:"";
 
   const penList=r.pen.map(p=>`
     <div style="padding:10px 0;border-bottom:1px solid var(--border)">
@@ -1691,6 +1812,7 @@ ${facWarn}
     </div>
     <div class="rc" style="margin-bottom:10px">
       <div class="rct">Mark Guidance</div>
+      ${workedExamples}
       ${finalPenaltyPicker}
       <div style="display:flex;flex-direction:column;gap:0">
         ${markRows.map(([k,v])=>`
@@ -1944,13 +2066,33 @@ function buildCaseRecord(){
     assessment_item: S.assessItem || "",
     assessment_type: S.assessType || "",
     assessment_setting: humanSetting(S.setting),
-    original_or_provisional_component_mark: S.currentMark || "",
+    assessment_component_total_marks: S.componentTotalMarks || "",
+    assessment_marks_gained_out_of_total: S.marksGained || "",
+    original_or_provisional_component_mark: currentPercentForDisplay()!==null ? fmtMark(currentPercentForDisplay()) : "",
+    derived_original_or_provisional_component_mark: derivedCurrentPercent()!==null ? fmtMark(derivedCurrentPercent()) : "",
+    component_weighting_in_module: S.componentWeight || "",
+    original_module_contribution: (() => {
+      const n = weightedModuleContribution(currentPercentForDisplay());
+      return n!==null ? fmtMark(n) : "";
+    })(),
     remaining_work_component_mark: S.remainingMark || "",
     pass_mark: S.passMark || "",
     final_penalty_used_for_mark_calculation: d ? finalPenaltyForCalc(d) : "",
     suggested_working_penalty_for_estimate: d ? suggestedPenaltyForEstimate(d) : "",
     computed_revised_component_mark: d ? computedPenaltyMark(finalPenaltyForCalc(d)) : "",
     estimated_revised_component_mark: d ? computedPenaltyMark(suggestedPenaltyForEstimate(d)) : "",
+    computed_revised_module_contribution: (() => {
+      if(!d) return "";
+      const computed = computedPenaltyMark(finalPenaltyForCalc(d));
+      const n = weightedModuleContribution(markNum(computed));
+      return n!==null ? fmtMark(n) : "";
+    })(),
+    estimated_revised_module_contribution: (() => {
+      if(!d) return "";
+      const estimated = computedPenaltyMark(suggestedPenaltyForEstimate(d));
+      const n = weightedModuleContribution(markNum(estimated));
+      return n!==null ? fmtMark(n) : "";
+    })(),
     revised_mark_guidance: d ? revisedMarkText(d) : "",
     date_submitted: S.dSub || "",
     date_detected: "",
@@ -2210,8 +2352,11 @@ function applyCaseRecord(data){
     assessItem: data.assessment_item || "",
     assessType: data.assessment_type || "",
     setting: settingToState(data.assessment_setting || ""),
+    componentTotalMarks: data.assessment_component_total_marks || "",
+    marksGained: data.assessment_marks_gained_out_of_total || "",
     extent: extentToState(data.extent_affected || ""),
     currentMark: data.original_or_provisional_component_mark || "",
+    componentWeight: data.component_weighting_in_module || "",
     remainingMark: data.remaining_work_component_mark || "",
     passMark: data.pass_mark || "40",
     finalPenalty: data.final_penalty_used_for_mark_calculation || "",
@@ -2325,13 +2470,20 @@ async function buildDocxBlob(){
       ["Assessment item", rec.assessment_item],
       ["Assessment type", rec.assessment_type],
       ["Assessment setting", rec.assessment_setting],
-      ["Original / provisional component mark", rec.original_or_provisional_component_mark],
+      ["Assessment component total marks", rec.assessment_component_total_marks],
+      ["Assessment marks gained out of total", rec.assessment_marks_gained_out_of_total],
+      ["Original mark before penalty (%)", rec.original_or_provisional_component_mark],
+      ["Auto-converted original mark (%)", rec.derived_original_or_provisional_component_mark],
+      ["Component weighting in module", rec.component_weighting_in_module],
+      ["Original module contribution", rec.original_module_contribution],
       ["Remaining-work component mark", rec.remaining_work_component_mark],
       ["Pass mark", rec.pass_mark],
       ["Final penalty used for mark calculation", rec.final_penalty_used_for_mark_calculation],
       ["Suggested working penalty for estimate", rec.suggested_working_penalty_for_estimate],
       ["Computed revised component mark", rec.computed_revised_component_mark],
       ["Estimated revised component mark", rec.estimated_revised_component_mark],
+      ["Computed revised module contribution", rec.computed_revised_module_contribution],
+      ["Estimated revised module contribution", rec.estimated_revised_module_contribution],
       ["Date submitted", rec.date_submitted]
     ]),
 
@@ -2411,7 +2563,7 @@ async function exportDocx(){
   }
 }
 function newCase(){
-  Object.assign(S,{step:0,sName:"",sNum:"",prog:"",yr:"",ugpg:"UG",mName:"",mCode:"",coord:"",dSub:"",tIdx:-1,tIdxs:[],prior:"0",assessItem:"",assessType:"",setting:"coursework",extent:"",currentMark:"",remainingMark:"",passMark:"40",finalPenalty:"",evidence:[],level:"",levelNote:"",flags:[],ctx:"",exceptionalNPR:false,tab:"contact",copied:""});
+  Object.assign(S,{step:0,sName:"",sNum:"",prog:"",yr:"",ugpg:"UG",mName:"",mCode:"",coord:"",dSub:"",tIdx:-1,tIdxs:[],prior:"0",assessItem:"",assessType:"",setting:"coursework",extent:"",currentMark:"",remainingMark:"",passMark:"40",finalPenalty:"",componentTotalMarks:"",marksGained:"",componentWeight:"",evidence:[],level:"",levelNote:"",flags:[],ctx:"",exceptionalNPR:false,tab:"contact",copied:""});
   render();
 }
 
